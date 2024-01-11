@@ -69,7 +69,7 @@
     # NestedModules = @()
     
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @('Get-Warranty','Get-WarrantyAsus','Get-WarrantyDell','Get-WarrantyEdsys','Get-WarrantyHP','Get-WarrantyLenovo','Get-MachineInfo','Write-WarrantyNinjaRMM','Write-WarrantyRegistry','Get-SelniumModule','Get-WebDriver')
+    FunctionsToExport = @('Get-Warranty','Get-WarrantyAsus','Get-WarrantyDell','Get-WarrantyEdsys','Get-WarrantyHP','Get-WarrantyLenovo','Get-MachineInfo','Write-WarrantyNinjaRMM','Write-WarrantyRegistry','Get-SelniumModule','Get-WebDriver', 'Get-WarrantyRegistry')
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @()
