@@ -1,4 +1,4 @@
-function Get-SelniumModule {
+function Get-SeleniumModule {
     <#
         .SYNOPSIS
         Function to Get SelniumModule

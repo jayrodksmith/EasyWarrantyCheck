@@ -111,8 +111,6 @@ function Get-WarrantyEdsys {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-                $warStartDate = $warfirst
-                $warEndDate = $warEndDate
         } else {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
@@ -125,8 +123,6 @@ function Get-WarrantyEdsys {
                 'Product Image' = ""
                 'Warranty URL' = ""
             }
-            $warStartDate=$null
-            $warEndDate=$null
         }
     return $WarObj
 }
