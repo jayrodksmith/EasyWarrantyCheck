@@ -27,6 +27,11 @@ $EasyWarrantyCheckDownloadFile = ('{0}\EasyWarrantyCheck.zip' -f $ENV:Temp)
     }
 Invoke-WebRequest -Uri $EasyWarrantyCheckDownloadZip -OutFile $EasyWarrantyCheckDownloadFile
 Expand-Archive -Path $EasyWarrantyCheckDownloadFile -DestinationPath $EasyWarrantyCheckExtractionPath -Force
+$extractedFolderPath = Join-Path -Path $EasyWarrantyCheckExtractionPath -ChildPath "EasyWarrantyCheck-Main"
+# Move all files from the extracted folder to the root
+Get-ChildItem -Path $extractedFolderPath | Move-Item -Destination $EasyWarrantyCheckExtractionPath
+# Optional: Remove the empty extracted folder
+Remove-Item -Path $extractedFolderPath -Force
 Remove-Item -Path $EasyWarrantyCheckDownloadFile -Force
 ```
 
