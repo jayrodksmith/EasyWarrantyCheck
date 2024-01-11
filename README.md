@@ -36,6 +36,10 @@ Remove-Item -Path $EasyWarrantyCheckDownloadFile -Force
 ```
 
 ### Quick start
+```powershell
+Import-Module EasyWarrantyCheck
 
+Get-Warranty
+```
 ## Author
 Jared Smith
