@@ -8,7 +8,7 @@ function Get-Warranty {
     
         .EXAMPLE
         Get-Warranty
-        Get-Warranty -Serial "12345678" -Manufacture "HP"
+        Get-Warranty -Serial "5CG3107NKQ" -Manufacturer "HP" -RMM 'None'
     
         .PARAMETER Serial
         Manually set serial
@@ -23,14 +23,19 @@ function Get-Warranty {
             [Parameter(Mandatory = $false)]
             [ValidateSet('NinjaRMM', 'None')]
 		    [String]$RMM = 'NinjaRMM',
+            #Enable Registry Storing
+            [Parameter(Mandatory = $false)]
+            [bool]$EnableRegistry = $true,
+            [Parameter(Mandatory = $false)]
+            [String]$RegistryPath = 'HKLM:\SOFTWARE\RMMCustomInfo\',
             # Force Update RMM with details
             [Parameter(Mandatory = $false)]
-		    [bool]$RMMForceUpdate = $false,
+		    [bool]$ForceUpdate = $false,
             # Custom Machine Details
             [Parameter(Mandatory = $false)]
             [String]$Serial = 'Automatic',
             [Parameter(Mandatory = $false)]
-            [String]$Manufacture = 'Automatic',
+            [String]$Manufacturer = 'Automatic',
             # Set Date formats
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy',
@@ -43,6 +48,7 @@ function Get-Warranty {
             [String]$ninjawarrantystatus = 'warrantystatus',
             [Parameter(Mandatory = $false)]
             [String]$ninjainvoicenumber = 'invoicenumber'
+
         )
         # Set Global Variables
         if($RMM -eq 'NinjaRMM'){
@@ -51,13 +57,22 @@ function Get-Warranty {
         Set-Variable ninjawarrantystatus -Value $ninjawarrantystatus -Scope Global -option ReadOnly -Force
         Set-Variable ninjainvoicenumber -Value $ninjainvoicenumber -Scope Global -option ReadOnly -Force
         }
-        if($RMMForceUpdate -eq $true){
-        Set-Variable ForceUpdate -Value $RMMForceUpdate -Scope Global -option ReadOnly -Force
+        if($ForceUpdate -eq $true){
+        Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
         }
-
         $machineinfo = Get-MachineInfo
-        $mfg = $machineinfo.Manufacturer
-        $serialnumber = $machineinfo.serialnumber
+        if($serial -eq 'Automatic'){
+            $serialnumber = $machineinfo.serialnumber
+        } else {
+            $serialnumber = $serial
+        }
+        if($Manufacturer -eq 'Automatic'){
+            $mfg = $machineinfo.Manufacturer
+        } else {
+            $mfg = $Manufacturer
+        }
+        
+
         switch -Wildcard ($mfg){
             "EDSYS"{
                 $Warobj = Get-WarrantyEdsys -Serial $serialnumber -DateFormat $DateFormat
@@ -72,7 +87,7 @@ function Get-Warranty {
                 $Warobj = Get-WarrantyDell -Serial $serialnumber -DateFormat $DateFormat
             }
             "HP"{
-                Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
+                $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
             }
             default{
                 $Notsupported = $true
@@ -81,6 +96,9 @@ function Get-Warranty {
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){
         Write-WarrantyNinjaRMM -DateFormat $DateFormat -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+    }
+    if($EnableRegistry -and ($Notsupported -eq $false)){
+        Write-WarrantyRegistry -RegistryPath $RegistryPath -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
     }
 return $Warobj
 }

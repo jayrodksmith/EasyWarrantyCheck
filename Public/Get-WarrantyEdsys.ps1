@@ -115,7 +115,7 @@ function Get-WarrantyEdsys {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Invoice' = $null
-                'Warranty Product name' = 'Could not get warranty information'
+                'Warranty Product name' = $null
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'

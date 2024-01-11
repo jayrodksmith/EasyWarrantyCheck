@@ -44,7 +44,7 @@ function Get-WarrantyHP {
                 Write-Output "Warranty Start: $wsd"
                 $WarObj = [PSCustomObject]@{
                     'Serial' = $Serial
-                    'Warranty Product name' = 'Could not get warranty information'
+                    'Warranty Product name' = $null
                     'StartDate' = $wsd
                     'EndDate' = $null
                     'Warranty Status' = 'Could not get warranty information'
@@ -58,7 +58,7 @@ function Get-WarrantyHP {
                 Write-Output "No details in registry"
                 $WarObj = [PSCustomObject]@{
                     'Serial' = $Serial
-                    'Warranty Product name' = 'Could not get warranty information'
+                    'Warranty Product name' = $null
                     'StartDate' = $null
                     'EndDate' = $null
                     'Warranty Status' = 'Could not get warranty information'
@@ -200,7 +200,7 @@ function Get-WarrantyHP {
         } else {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $serialnumber
-                'Warranty Product name' = 'Could not get warranty information'
+                'Warranty Product name' = $null
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
