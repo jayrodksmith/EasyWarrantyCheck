@@ -20,10 +20,6 @@ function Get-WarrantyRegistry {
             [Parameter(Mandatory = $false)]
             [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
         )
-        if (-not (Test-Path "$RegistryPath\WarrantyStatus")) {
-            return $false
-        }
-        else {
-            return $true
-        }
+        $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'WarrantyStatus' -ErrorAction SilentlyContinue
+        return ($null -ne $registryValue -and $null -ne $registryValue.WarrantyStatus)
     }

@@ -27,11 +27,13 @@ function Get-WarrantyAsus {
         Get-SeleniumModule
         $WebDriverPath = "C:\temp\chromedriver-win64"
         # Set Chrome options to run in headless mode
+        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
+        $ChromeService.HideCommandPromptWindow = $true
         $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
         $chromeOptions.AddArgument("headless")
         # Start a new browser session with headless mode
         try{
-            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($WebDriverPath, $chromeOptions)
+            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
             Write-Output "Chrome Not Installed or old version"
             $WarObj = [PSCustomObject]@{
