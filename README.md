@@ -10,6 +10,7 @@ Can be used standalone, or as a Module
 If using standalone, simply copy the contents of EasyWarrantyCheck_RMM.ps1 into your RMM.
 The last line is "Get-Warranty" and will run all settings automatically
 Replace last line with below commands depending on if US/AU
+
 ```Powershell
 # AU
 Get-Warranty
@@ -21,7 +22,7 @@ Get-Warranty -DateFormat "yyyy-MM-dd"
 
 ### Prerequisites
 
-### Installation
+### Installation of Module
 
 ```powershell
 $githubrepo  = "jayrodksmith/EasyWarrantyCheck"
@@ -48,7 +49,7 @@ Remove-Item -Path $extractedFolderPath -Force
 Remove-Item -Path $EasyWarrantyCheckDownloadFile -Force
 ```
 
-### Quick start
+### Quick start with Module
 ```powershell
 Import-Module EasyWarrantyCheck
 
