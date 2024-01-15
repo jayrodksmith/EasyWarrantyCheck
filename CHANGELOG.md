@@ -8,6 +8,7 @@
 
 - Added progress output when searching for results
 - Workflow to combine all functions into 1 script for use with NinjaRMM
+- Check to see if NinjaRMM commands exists
 
 ### Changed
 
