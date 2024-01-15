@@ -1048,4 +1048,4 @@ function Write-WarrantyRegistry{
                 }
     }
 
-Get-Warranty`n
+Get-Warranty
