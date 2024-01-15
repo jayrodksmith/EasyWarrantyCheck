@@ -39,6 +39,6 @@ jobs:
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
-        git add $outputFilePath
+        git add .
         git commit -m "Combine PowerShell Functions into 1 script"
         git push
