@@ -28,7 +28,7 @@ jobs:
             $fileContent = Get-Content $file.FullName -Raw
 
             # Check if the file contains the Get-Warranty function
-            if ($fileContent -match 'function Get-Warranty') {
+            if ($fileContent -match 'function Get-Warranty {') {
                 $getWarrantyFunction = $fileContent
             } else {
                 $combinedContent += $fileContent + "`n`n"
