@@ -15,6 +15,7 @@ jobs:
 
     - name: Combine PowerShell scripts
       shell: pwsh
+      id: combine-scripts
       run: |
         $sourceDirectory = 'Public'
         $outputFilePath = 'EasyWarrantyCheck_RMM.ps1'
@@ -46,11 +47,14 @@ jobs:
         if ($existingContent -ne $combinedContent) {
             $combinedContent | Out-File -FilePath $outputFilePath -Force
             Write-Host "Combined script saved to: $outputFilePath"
+            echo "::set-output name=combined-changed::true"
         } else {
             Write-Host "Combined script unchanged. No commit or push needed."
+            echo "::set-output name=combined-changed::false"
         }
 
     - name: Push Changes
+      if: steps.combine-scripts.outputs.combined-changed == 'true'
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
