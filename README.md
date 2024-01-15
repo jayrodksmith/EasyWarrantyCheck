@@ -6,6 +6,19 @@
 This module is a way to get Warranty details without API access to vendors
 ## Getting Started
 
+Can be used standalone, or as a Module
+If using standalone, simply copy the contents of EasyWarrantyCheck_RMM.ps1 into your RMM.
+The last line is "Get-Warranty" and will run all settings automatically
+Replace last line with below commands depending on if US/AU
+```Powershell
+# AU
+Get-Warranty
+
+# US
+Get-Warranty -DateFormat "yyyy-MM-dd"
+
+```
+
 ### Prerequisites
 
 ### Installation
