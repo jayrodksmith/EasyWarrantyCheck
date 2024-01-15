@@ -31,6 +31,7 @@ function Get-WarrantyHP {
         $ChromeService.HideCommandPromptWindow = $true
         $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
         $chromeOptions.AddArgument("headless")
+        $chromeOptions.AddArgument("--log-level=3")
         # Start a new browser session with headless mode
         try{
         $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
@@ -73,6 +74,7 @@ function Get-WarrantyHP {
             }
         }
         # Navigate to the warranty check URL
+        Write-Output "Checking HP website for serial : $Serial"
         $driver.Navigate().GoToUrl("https://support.hp.com/au-en/check-warranty")
         # Locate and input the serial number into the form
         $serialnumber = $Serial
@@ -82,16 +84,18 @@ function Get-WarrantyHP {
         $submitButton = $driver.FindElementById("FindMyProduct")
         $submitButton.Click()
         # Wait for the page to load (you might need to adjust the sleep time)
+        Write-Output "Waiting for results......."
         Start-Sleep -Seconds 15
         # Check if the error message exists
         try{
             $errorMsgElement = $driver.FindElementByClassName("errorTxt")
         }catch{
-            Write-Output "No Product Model required"
+            Write-Debug "No Product Model required"
         }
         if ($null -ne $errorMsgElement) {
             # Error message found
-            Write-Output "Need Product ID"
+            Write-Output "Searching for additional SystemSKU......."
+            Write-Debug "Need Product ID"
             # Define the registry path
             $regPath = "HKLM:\HARDWARE\DESCRIPTION\System\BIOS"
             # Get the value of "SystemSKU" if it exists
@@ -102,6 +106,7 @@ function Get-WarrantyHP {
                 $productField.SendKeys($systemSKU)
                 $submitButton = $driver.FindElementById("FindMyProductNumber")
                 $submitButton.Click()
+                Write-Output "Waiting for results......."
                 Start-Sleep -Seconds 15
             } catch {
                 Write-Output "SystemSKU key does not exist in the specified registry path."

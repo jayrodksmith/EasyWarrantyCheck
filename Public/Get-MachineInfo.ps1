@@ -8,7 +8,7 @@ function Get-MachineInfo {
 
     .EXAMPLE
     Get-MachineInfo
-    Get-MachineInfo -Serial "12345678" -Manufacture "HP"
+    Get-MachineInfo -Serial "12345678" -Manufacturer "HP" // (Forces Serial and Make)
 
     .PARAMETER Serial
     Manually set serial

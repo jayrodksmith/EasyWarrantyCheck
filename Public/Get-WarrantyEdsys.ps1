@@ -24,6 +24,8 @@ function Get-WarrantyEdsys {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
         # Define the URL
+        Write-Output "Checking Edsys website for serial : $Serial"
+        Write-Output "Waiting for results......."
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string

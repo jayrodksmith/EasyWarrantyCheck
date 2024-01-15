@@ -1,0 +1,34 @@
+name: Combine PowerShell Scripts for use with RMM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  combine-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Combine PowerShell scripts
+      run: |
+        $sourceDirectory = "Public"
+        $outputFilePath = "EasyWarrantyCheck_RMM.ps1"
+
+        $scriptFiles = Get-ChildItem -Path $sourceDirectory -Filter *.ps1 -Recurse
+
+        $combinedContent = ""
+
+        foreach ($file in $scriptFiles) {
+            $fileContent = Get-Content $file.FullName -Raw
+            $combinedContent += $fileContent + "`n`n"
+        }
+        # Add Get-Warranty function call at the end of the script
+        $combinedContent += "Get-Warranty`n"
+
+        $combinedContent | Out-File -FilePath $outputFilePath -Force
+
+        Write-Host "Combined script saved to: $outputFilePath"

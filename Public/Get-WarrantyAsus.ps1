@@ -31,6 +31,7 @@ function Get-WarrantyAsus {
         $ChromeService.HideCommandPromptWindow = $true
         $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
         $chromeOptions.AddArgument("headless")
+        $chromeOptions.AddArgument("--log-level=3")
         # Start a new browser session with headless mode
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
@@ -50,6 +51,7 @@ function Get-WarrantyAsus {
             return $warObj
         }
         # Navigate to the warranty check URL
+        Write-Output "Checking Asus website for serial : $Serial"
         $driver.Navigate().GoToUrl("https://www.asus.com/support/warranty-status-inquiry")
         # Locate and input the serial number into the form
         $serialnumber = $Serial
@@ -61,6 +63,7 @@ function Get-WarrantyAsus {
         # Find and click the submit button
         $submitButton = $driver.FindElementByXPath("//button[@class='submit-button blue' and @aria-label='Submit']")
         $submitButton.Click()
+        Write-Output "Waiting for results......."
         start-sleep -Seconds 10
         # Find the rows in the table
         $rows = $driver.FindElementsByXPath("//div[@role='rowgroup' and @class='result-item']//li[@role='cell']")

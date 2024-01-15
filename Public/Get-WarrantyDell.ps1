@@ -32,6 +32,7 @@ function Get-WarrantyDell {
         $ChromeService.HideCommandPromptWindow = $true
         $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
         $chromeOptions.AddArgument("headless")
+        $chromeOptions.AddArgument("--log-level=3")
         # Start a new browser session with headless mode
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
@@ -51,7 +52,9 @@ function Get-WarrantyDell {
             return $warObj
         }
         # Navigate to the warranty check URL
+        Write-Output "Checking Dell website for serial : $Serial"
         $driver.Navigate().GoToUrl("$URL")
+        Write-Output "Waiting for results......."
         Start-Sleep -Seconds 25
         
         # Find all elements on the page

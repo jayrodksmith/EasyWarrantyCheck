@@ -12,7 +12,7 @@
     RootModule = 'EasyWarrantyCheck.psm1'
     
     # Version number of this module.
-    ModuleVersion = '0.4.0'
+    ModuleVersion = '0.5.0'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@
     CompanyName = 'Jayrod'
     
     # Copyright statement for this module
-    Copyright = '(c) 2023 Jayrod. All rights reserved.'
+    Copyright = '(c) 2024 Jayrod. All rights reserved.'
     
     # Description of the functionality provided by this module
     Description = 'Powershell Easy Warranty Check'

@@ -8,7 +8,7 @@ function Get-Warranty {
     
         .EXAMPLE
         Get-Warranty
-        Get-Warranty -Serial "5CG3107NKQ" -Manufacturer "HP" -RMM 'None'
+        Get-Warranty -Serial "SerialNumber" -Manufacturer "HP" -RMM 'None'
     
         .PARAMETER Serial
         Manually set serial
