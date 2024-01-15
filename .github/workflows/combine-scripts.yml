@@ -38,6 +38,8 @@ jobs:
         # Configure Git with the GitHub token
         & git config --local user.email "jayrodksmith@gmail.com"
         & git config --local user.name "jayrodksmith"
+        git remote set-url origin "https://$GITHUB_ACTOR:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+
         
         # Add, commit, and push changes
         git add $outputFilePath
