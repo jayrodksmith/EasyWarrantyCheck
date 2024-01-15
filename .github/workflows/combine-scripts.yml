@@ -44,7 +44,11 @@ jobs:
         
         # Check if the combined content is different from the existing content
         $existingContent = Get-Content $outputFilePath -Raw -ErrorAction SilentlyContinue
-                
+        
+        # Display the first 5 lines of existing content
+        Write-Host "Displaying first 5 lines of existing content"
+        $existingContent | Select-Object -First 5        
+        
         if (Compare-Object $existingContent $combinedContent) {
             $combinedContent | Out-File -FilePath $outputFilePath -Force
             Write-Host "Combined script saved to: $outputFilePath"
