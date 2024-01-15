@@ -18,23 +18,39 @@ jobs:
       run: |
         $sourceDirectory = 'Public'
         $outputFilePath = 'EasyWarrantyCheck_RMM.ps1'
-        
+        $repositoryPath = $GITHUB_WORKSPACE
+
         $scriptFiles = Get-ChildItem -Path $sourceDirectory -Filter *.ps1 -Recurse
         
         $combinedContent = ''
         
         foreach ($file in $scriptFiles) {
             $fileContent = Get-Content $file.FullName -Raw
-            $combinedContent += $fileContent + "`n`n"
+
+            # Check if the file contains the Get-Warranty function
+            if ($fileContent -match 'function Get-Warranty') {
+                $getWarrantyFunction = $fileContent
+            } else {
+                $combinedContent += $fileContent + "`n`n"
+            }
         }
+        
+        # Place the Get-Warranty function at the top
+        $combinedContent = $getWarrantyFunction + "`n`n" + $combinedContent
         
         # Add Get-Warranty function call at the end of the script
         $combinedContent += 'Get-Warranty'
         
-        $combinedContent | Out-File -FilePath $outputFilePath -Force
-        
-        Write-Host "Combined script saved to: $outputFilePath"
-        
+        # Check if the combined content is different from the existing content
+        $existingContent = Get-Content (Join-Path $repositoryPath $outputFilePath) -Raw -ErrorAction SilentlyContinue
+                
+        if ($existingContent -ne $combinedContent) {
+            $combinedContent | Out-File -FilePath (Join-Path $repositoryPath $outputFilePath) -Force
+            Write-Host "Combined script saved to: $outputFilePath"
+        } else {
+            Write-Host "Combined script unchanged. No commit or push needed."
+        }
+
     - name: Push Changes
       run: |
         git config --local user.email "actions@github.com"
