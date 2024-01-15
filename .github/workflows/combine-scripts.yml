@@ -35,13 +35,10 @@ jobs:
         
         Write-Host "Combined script saved to: $outputFilePath"
         
-        # Configure Git with the GitHub token
-        & git config --local user.email "jayrodksmith@gmail.com"
-        & git config --local user.name "jayrodksmith"
-        git remote set-url origin "https://${GITHUB_ACTOR}:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-        
-        # Add, commit, and push changes
+    - name: Push Changes
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
         git add $outputFilePath
-        git commit -m "Combine PowerShell scripts"
+        git commit -m "Combine PowerShell Functions into 1 script"
         git push
