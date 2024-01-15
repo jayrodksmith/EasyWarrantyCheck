@@ -36,9 +36,8 @@ jobs:
         Write-Host "Combined script saved to: $outputFilePath"
         
         # Configure Git with the GitHub token
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git config --global http.extraheader "AUTHORIZATION: basic $(echo ${{ secrets.GH_TOKEN }} | base64)"
+        & git config --local user.email "jayrodksmith@gmail.com"
+        & git config --local user.name "jayrodksmith"
         
         # Add, commit, and push changes
         git add $outputFilePath
