@@ -29,7 +29,7 @@ jobs:
         }
         
         # Add Get-Warranty function call at the end of the script
-        $combinedContent += 'Get-Warranty`n'
+        $combinedContent += 'Get-Warranty'
         
         $combinedContent | Out-File -FilePath $outputFilePath -Force
         
