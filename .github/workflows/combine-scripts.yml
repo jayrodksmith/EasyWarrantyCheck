@@ -34,3 +34,13 @@ jobs:
         $combinedContent | Out-File -FilePath $outputFilePath -Force
         
         Write-Host "Combined script saved to: $outputFilePath"
+        
+        # Configure Git with the GitHub token
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git config --global http.extraheader "AUTHORIZATION: basic $(echo ${{ secrets.GH_TOKEN }} | base64)"
+        
+        # Add, commit, and push changes
+        git add $outputFilePath
+        git commit -m "Combine PowerShell scripts"
+        git push
