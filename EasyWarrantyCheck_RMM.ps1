@@ -91,7 +91,7 @@ function Get-Warranty {
             }
             default{
                 $Notsupported = $true
-                Write-Output "Manufacturer not Supported :  $mfg"
+                Write-Host "Manufacturer not Supported :  $mfg"
             }
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){
@@ -197,7 +197,7 @@ function Get-WarrantyAsus {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Output "Chrome Not Installed or old version"
+            Write-Host "Chrome Not Installed or old version"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -212,7 +212,7 @@ function Get-WarrantyAsus {
             return $warObj
         }
         # Navigate to the warranty check URL
-        Write-Output "Checking Asus website for serial : $Serial"
+        Write-Host "Checking Asus website for serial : $Serial"
         $driver.Navigate().GoToUrl("https://www.asus.com/support/warranty-status-inquiry")
         # Locate and input the serial number into the form
         $serialnumber = $Serial
@@ -224,7 +224,7 @@ function Get-WarrantyAsus {
         # Find and click the submit button
         $submitButton = $driver.FindElementByXPath("//button[@class='submit-button blue' and @aria-label='Submit']")
         $submitButton.Click()
-        Write-Output "Waiting for results......."
+        Write-Host "Waiting for results......."
         start-sleep -Seconds 10
         # Find the rows in the table
         $rows = $driver.FindElementsByXPath("//div[@role='rowgroup' and @class='result-item']//li[@role='cell']")
@@ -249,7 +249,7 @@ function Get-WarrantyAsus {
             $warrantystatus = "Within Warranty"
             # Additional actions if needed
         } else {
-            # Write-Output "Expired"
+            # Write-Host "Expired"
             $warrantystatus = "Expired"
         }
         
@@ -325,7 +325,7 @@ function Get-WarrantyDell {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Output "Chrome Not Installed or old version"
+            Write-Host "Chrome Not Installed or old version"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -340,9 +340,9 @@ function Get-WarrantyDell {
             return $warObj
         }
         # Navigate to the warranty check URL
-        Write-Output "Checking Dell website for serial : $Serial"
+        Write-Host "Checking Dell website for serial : $Serial"
         $driver.Navigate().GoToUrl("$URL")
-        Write-Output "Waiting for results......."
+        Write-Host "Waiting for results......."
         Start-Sleep -Seconds 25
         
         # Find all elements on the page
@@ -372,7 +372,7 @@ function Get-WarrantyDell {
                 $warrantystatus = "In Warranty"
             }
         } else {
-            Write-Output "No matching text found for warranty status"
+            Write-Host "No matching text found for warranty status"
         }
         # Close the browser
         $driver.Quit()
@@ -430,8 +430,8 @@ function Get-WarrantyEdsys {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
         # Define the URL
-        Write-Output "Checking Edsys website for serial : $Serial"
-        Write-Output "Waiting for results......."
+        Write-Host "Checking Edsys website for serial : $Serial"
+        Write-Host "Waiting for results......."
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string
@@ -476,37 +476,41 @@ function Get-WarrantyEdsys {
 
         # Output the PowerShell objects table
         $table = $objects
-
-        # Check if the "Within Warranty" text exists
-        if ($($table.'Warranty Status') -eq "In Warranty" -or $($table.'Warranty Status') -eq 'Under Warranty(Active)') {
-            # "Within Warranty" text found
-            $warrantystatus = "Within Warranty"
-            # Additional actions if needed
+        if ($($table.'Title') -eq 'No Results found') {
+            Write-Host "No Results found on Edsys Website"
         } else {
-            # Write-Output "Expired"
-            $warrantystatus = "Expired"
-        }
-        # Date Convert
-        $dateString = $($table.'Build Date')
-            if ($dateString -match '^\d{4}-\d{2}-\d{2}$') {
-            $inputFormat = "yyyy-MM-dd"
-            } elseif ($dateString -match '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$') {
-                $inputFormat = "yyyy-MM-dd HH:mm:ss"
-            } elseif ($dateString -match '^\d{4}-\d{2}-\d$') {
-                $dateString = $dateString -replace '(\d{4}-\d{2})-(\d)$', '${1}-0${2}' # Add leading zero
-                $inputFormat = "yyyy-MM-dd"
+            # Check if the "Within Warranty" text exists
+            if ($($table.'Warranty Status') -eq "In Warranty" -or $($table.'Warranty Status') -eq 'Under Warranty(Active)') {
+                # "Within Warranty" text found
+                $warrantystatus = "Within Warranty"
+                # Additional actions if needed
             } else {
-                Write-Output "Date format not recognized"
+                # Write-Host "Expired"
+                $warrantystatus = "Expired"
             }
+            # Date Convert
+            $dateString = $($table.'Build Date')
+                if ($dateString -match '^\d{4}-\d{2}-\d{2}$') {
+                $inputFormat = "yyyy-MM-dd"
+                } elseif ($dateString -match '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$') {
+                    $inputFormat = "yyyy-MM-dd HH:mm:ss"
+                } elseif ($dateString -match '^\d{4}-\d{2}-\d$') {
+                    $dateString = $dateString -replace '(\d{4}-\d{2})-(\d)$', '${1}-0${2}' # Add leading zero
+                    $inputFormat = "yyyy-MM-dd"
+                } else {
+                    Write-Host "Date format not recognized"
+                }
+                $date = [DateTime]::ParseExact($dateString, $inputFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+                $warfirst = $date.ToString($dateformat)
+            # Add warranty type to Converted Date
+            $warrantyYears = $($table.'Warranty Type') -replace 'Years', '' -replace '\s', ''
+            $warrantyYears = $warrantyYears -replace 'RTD', ''
+            $warrantyYears = $warrantyYears -replace 'ONE', ''
             $date = [DateTime]::ParseExact($dateString, $inputFormat, [System.Globalization.CultureInfo]::InvariantCulture)
-            $warfirst = $date.ToString($dateformat)
-        # Add warranty type to Converted Date
-        $warrantyYears = $($table.'Warranty Type') -replace 'Years', '' -replace '\s', ''
-        $warrantyYears = $warrantyYears -replace 'RTD', ''
-        $warrantyYears = $warrantyYears -replace 'ONE', ''
-        $date = [DateTime]::ParseExact($dateString, $inputFormat, [System.Globalization.CultureInfo]::InvariantCulture)
-        $warEndDate = $date.AddYears($warrantyYears)
-        $warEndDate = $warEndDate.ToString($dateformat)
+            $warEndDate = $date.AddYears($warrantyYears)
+            $warEndDate = $warEndDate.ToString($dateformat)
+        }
+        
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
@@ -573,15 +577,15 @@ function Get-WarrantyHP {
         try{
         $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Output "Chrome Not Installed or old version"
-            Write-Output "Estimating Details from Registry"
+            Write-Host "Chrome Not Installed or old version"
+            Write-Host "Estimating Details from Registry"
             try {
                 $regPath = "HKLM:\SOFTWARE\WOW6432Node\HP\HPActiveSupport\HPSF\Warranty"
                 $wsd = Get-ItemProperty -Path $regPath -Name "WSD" -ErrorAction Stop | Select-Object -ExpandProperty "WSD"
                 # Convert string to date format
                 $wsd = [DateTime]::ParseExact($wsd, "yyyyMMdd", [System.Globalization.CultureInfo]::InvariantCulture)
                 $wsd = Get-Date $wsd -Format $DateFormat
-                Write-Output "Warranty Start: $wsd"
+                Write-Host "Warranty Start: $wsd"
                 $WarObj = [PSCustomObject]@{
                     'Serial' = $Serial
                     'Warranty Product name' = $null
@@ -595,7 +599,7 @@ function Get-WarrantyHP {
                 Remove-Module Selenium
                 return $warObj
             }catch{
-                Write-Output "No details in registry"
+                Write-Host "No details in registry"
                 $WarObj = [PSCustomObject]@{
                     'Serial' = $Serial
                     'Warranty Product name' = $null
@@ -611,7 +615,7 @@ function Get-WarrantyHP {
             }
         }
         # Navigate to the warranty check URL
-        Write-Output "Checking HP website for serial : $Serial"
+        Write-Host "Checking HP website for serial : $Serial"
         $driver.Navigate().GoToUrl("https://support.hp.com/au-en/check-warranty")
         # Locate and input the serial number into the form
         $serialnumber = $Serial
@@ -621,7 +625,7 @@ function Get-WarrantyHP {
         $submitButton = $driver.FindElementById("FindMyProduct")
         $submitButton.Click()
         # Wait for the page to load (you might need to adjust the sleep time)
-        Write-Output "Waiting for results......."
+        Write-Host "Waiting for results......."
         Start-Sleep -Seconds 15
         # Check if the error message exists
         try{
@@ -631,22 +635,22 @@ function Get-WarrantyHP {
         }
         if ($null -ne $errorMsgElement) {
             # Error message found
-            Write-Output "Searching for additional SystemSKU......."
+            Write-Host "Searching for additional SystemSKU......."
             Write-Debug "Need Product ID"
             # Define the registry path
             $regPath = "HKLM:\HARDWARE\DESCRIPTION\System\BIOS"
             # Get the value of "SystemSKU" if it exists
             try {
                 $systemSKU = Get-ItemProperty -Path $regPath -Name "SystemSKU" -ErrorAction Stop | Select-Object -ExpandProperty "SystemSKU"
-                Write-Output "SystemSKU value: $systemSKU"
+                Write-Host "SystemSKU value: $systemSKU"
                 $productField = $driver.FindElementById("product-number inputtextPN")
                 $productField.SendKeys($systemSKU)
                 $submitButton = $driver.FindElementById("FindMyProductNumber")
                 $submitButton.Click()
-                Write-Output "Waiting for results......."
+                Write-Host "Waiting for results......."
                 Start-Sleep -Seconds 15
             } catch {
-                Write-Output "SystemSKU key does not exist in the specified registry path."
+                Write-Host "SystemSKU key does not exist in the specified registry path."
                 Exit 0
             }
         } else {
@@ -662,7 +666,7 @@ function Get-WarrantyHP {
             try {
                 $startDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'Start date')]/following-sibling::div[@class='text ng-tns-c72-0']")
             } catch{
-                Write-Output "Could not find warranty Start date"
+                Write-Host "Could not find warranty Start date"
             }
         }
         if($startDateElement){
@@ -680,7 +684,7 @@ function Get-WarrantyHP {
             try {
                 $endDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'End date')]/following-sibling::div[@class='text ng-tns-c72-0']")
             } catch{
-                Write-Output "Could not find warranty End date"
+                Write-Host "Could not find warranty End date"
             }
         }
         if($endDateElement){
@@ -698,7 +702,7 @@ function Get-WarrantyHP {
             try {
                 $warrantyStatusElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'Time Remaining')]/following-sibling::div[@class='text ng-tns-c72-0']")       
             } catch{
-                Write-Output "Could not find warranty Status"
+                Write-Host "Could not find warranty Status"
             } 
         }
         if($warrantyStatusElement){
@@ -781,8 +785,8 @@ function Get-WarrantyLenovo {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Write-Output "Checking Lenovo website for serial : $Serial"
-        Write-Output "Waiting for results......."
+        Write-Host "Checking Lenovo website for serial : $Serial"
+        Write-Host "Waiting for results......."
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
         $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
         if($WarReq.id){
@@ -834,10 +838,15 @@ function Get-SeleniumModule {
         Get-SelniumModule
     
     #>
-    Set-ExecutionPolicy Bypass -scope Process -Force
+    try {
+        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    }catch{
+        
+    }
     Import-Module PowerShellGet
     $seleniumModule = Get-Module -Name Selenium -ListAvailable
     if (-not $seleniumModule) {
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
         Install-Module Selenium -Force
     }
     Import-Module Selenium -Force
