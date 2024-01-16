@@ -10,10 +10,15 @@ function Get-SeleniumModule {
         Get-SelniumModule
     
     #>
-    Set-ExecutionPolicy Bypass -scope Process -Force
+    try {
+        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    }catch{
+        
+    }
     Import-Module PowerShellGet
     $seleniumModule = Get-Module -Name Selenium -ListAvailable
     if (-not $seleniumModule) {
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
         Install-Module Selenium -Force
     }
     Import-Module Selenium -Force

@@ -91,7 +91,7 @@ function Get-Warranty {
             }
             default{
                 $Notsupported = $true
-                Write-Output "Manufacturer not Supported :  $mfg"
+                Write-Host "Manufacturer not Supported :  $mfg"
             }
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){

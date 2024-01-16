@@ -36,7 +36,7 @@ function Get-WarrantyAsus {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Output "Chrome Not Installed or old version"
+            Write-Host "Chrome Not Installed or old version"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -51,7 +51,7 @@ function Get-WarrantyAsus {
             return $warObj
         }
         # Navigate to the warranty check URL
-        Write-Output "Checking Asus website for serial : $Serial"
+        Write-Host "Checking Asus website for serial : $Serial"
         $driver.Navigate().GoToUrl("https://www.asus.com/support/warranty-status-inquiry")
         # Locate and input the serial number into the form
         $serialnumber = $Serial
@@ -63,7 +63,7 @@ function Get-WarrantyAsus {
         # Find and click the submit button
         $submitButton = $driver.FindElementByXPath("//button[@class='submit-button blue' and @aria-label='Submit']")
         $submitButton.Click()
-        Write-Output "Waiting for results......."
+        Write-Host "Waiting for results......."
         start-sleep -Seconds 10
         # Find the rows in the table
         $rows = $driver.FindElementsByXPath("//div[@role='rowgroup' and @class='result-item']//li[@role='cell']")
@@ -88,7 +88,7 @@ function Get-WarrantyAsus {
             $warrantystatus = "Within Warranty"
             # Additional actions if needed
         } else {
-            # Write-Output "Expired"
+            # Write-Host "Expired"
             $warrantystatus = "Expired"
         }
         

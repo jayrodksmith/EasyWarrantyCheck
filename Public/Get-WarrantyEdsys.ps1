@@ -24,8 +24,8 @@ function Get-WarrantyEdsys {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
         # Define the URL
-        Write-Output "Checking Edsys website for serial : $Serial"
-        Write-Output "Waiting for results......."
+        Write-Host "Checking Edsys website for serial : $Serial"
+        Write-Host "Waiting for results......."
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string
@@ -70,37 +70,41 @@ function Get-WarrantyEdsys {
 
         # Output the PowerShell objects table
         $table = $objects
-
-        # Check if the "Within Warranty" text exists
-        if ($($table.'Warranty Status') -eq "In Warranty" -or $($table.'Warranty Status') -eq 'Under Warranty(Active)') {
-            # "Within Warranty" text found
-            $warrantystatus = "Within Warranty"
-            # Additional actions if needed
+        if ($($table.'Title') -eq 'No Results found') {
+            Write-Host "No Results found on Edsys Website"
         } else {
-            # Write-Output "Expired"
-            $warrantystatus = "Expired"
-        }
-        # Date Convert
-        $dateString = $($table.'Build Date')
-            if ($dateString -match '^\d{4}-\d{2}-\d{2}$') {
-            $inputFormat = "yyyy-MM-dd"
-            } elseif ($dateString -match '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$') {
-                $inputFormat = "yyyy-MM-dd HH:mm:ss"
-            } elseif ($dateString -match '^\d{4}-\d{2}-\d$') {
-                $dateString = $dateString -replace '(\d{4}-\d{2})-(\d)$', '${1}-0${2}' # Add leading zero
-                $inputFormat = "yyyy-MM-dd"
+            # Check if the "Within Warranty" text exists
+            if ($($table.'Warranty Status') -eq "In Warranty" -or $($table.'Warranty Status') -eq 'Under Warranty(Active)') {
+                # "Within Warranty" text found
+                $warrantystatus = "Within Warranty"
+                # Additional actions if needed
             } else {
-                Write-Output "Date format not recognized"
+                # Write-Host "Expired"
+                $warrantystatus = "Expired"
             }
+            # Date Convert
+            $dateString = $($table.'Build Date')
+                if ($dateString -match '^\d{4}-\d{2}-\d{2}$') {
+                $inputFormat = "yyyy-MM-dd"
+                } elseif ($dateString -match '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$') {
+                    $inputFormat = "yyyy-MM-dd HH:mm:ss"
+                } elseif ($dateString -match '^\d{4}-\d{2}-\d$') {
+                    $dateString = $dateString -replace '(\d{4}-\d{2})-(\d)$', '${1}-0${2}' # Add leading zero
+                    $inputFormat = "yyyy-MM-dd"
+                } else {
+                    Write-Host "Date format not recognized"
+                }
+                $date = [DateTime]::ParseExact($dateString, $inputFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+                $warfirst = $date.ToString($dateformat)
+            # Add warranty type to Converted Date
+            $warrantyYears = $($table.'Warranty Type') -replace 'Years', '' -replace '\s', ''
+            $warrantyYears = $warrantyYears -replace 'RTD', ''
+            $warrantyYears = $warrantyYears -replace 'ONE', ''
             $date = [DateTime]::ParseExact($dateString, $inputFormat, [System.Globalization.CultureInfo]::InvariantCulture)
-            $warfirst = $date.ToString($dateformat)
-        # Add warranty type to Converted Date
-        $warrantyYears = $($table.'Warranty Type') -replace 'Years', '' -replace '\s', ''
-        $warrantyYears = $warrantyYears -replace 'RTD', ''
-        $warrantyYears = $warrantyYears -replace 'ONE', ''
-        $date = [DateTime]::ParseExact($dateString, $inputFormat, [System.Globalization.CultureInfo]::InvariantCulture)
-        $warEndDate = $date.AddYears($warrantyYears)
-        $warEndDate = $warEndDate.ToString($dateformat)
+            $warEndDate = $date.AddYears($warrantyYears)
+            $warEndDate = $warEndDate.ToString($dateformat)
+        }
+        
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial

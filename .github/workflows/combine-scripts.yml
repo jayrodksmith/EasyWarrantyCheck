@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   combine-scripts:
@@ -43,8 +44,12 @@ jobs:
         
         # Check if the combined content is different from the existing content
         $existingContent = Get-Content $outputFilePath -Raw -ErrorAction SilentlyContinue
-                
-        if ($existingContent -ne $combinedContent) {
+        
+        # Display the first 5 lines of existing content
+        Write-Host "Displaying first 5 lines of existing content"
+        $existingContent | Select-Object -First 5        
+        
+        if (Compare-Object $existingContent $combinedContent) {
             $combinedContent | Out-File -FilePath $outputFilePath -Force
             Write-Host "Combined script saved to: $outputFilePath"
             echo "::set-output name=combined-changed::true"

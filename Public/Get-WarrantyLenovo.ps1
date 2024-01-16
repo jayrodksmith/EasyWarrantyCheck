@@ -23,8 +23,8 @@ function Get-WarrantyLenovo {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Write-Output "Checking Lenovo website for serial : $Serial"
-        Write-Output "Waiting for results......."
+        Write-Host "Checking Lenovo website for serial : $Serial"
+        Write-Host "Waiting for results......."
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
         $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
         if($WarReq.id){

@@ -36,15 +36,15 @@ function Get-WarrantyHP {
         try{
         $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Output "Chrome Not Installed or old version"
-            Write-Output "Estimating Details from Registry"
+            Write-Host "Chrome Not Installed or old version"
+            Write-Host "Estimating Details from Registry"
             try {
                 $regPath = "HKLM:\SOFTWARE\WOW6432Node\HP\HPActiveSupport\HPSF\Warranty"
                 $wsd = Get-ItemProperty -Path $regPath -Name "WSD" -ErrorAction Stop | Select-Object -ExpandProperty "WSD"
                 # Convert string to date format
                 $wsd = [DateTime]::ParseExact($wsd, "yyyyMMdd", [System.Globalization.CultureInfo]::InvariantCulture)
                 $wsd = Get-Date $wsd -Format $DateFormat
-                Write-Output "Warranty Start: $wsd"
+                Write-Host "Warranty Start: $wsd"
                 $WarObj = [PSCustomObject]@{
                     'Serial' = $Serial
                     'Warranty Product name' = $null
@@ -58,7 +58,7 @@ function Get-WarrantyHP {
                 Remove-Module Selenium
                 return $warObj
             }catch{
-                Write-Output "No details in registry"
+                Write-Host "No details in registry"
                 $WarObj = [PSCustomObject]@{
                     'Serial' = $Serial
                     'Warranty Product name' = $null
@@ -74,7 +74,7 @@ function Get-WarrantyHP {
             }
         }
         # Navigate to the warranty check URL
-        Write-Output "Checking HP website for serial : $Serial"
+        Write-Host "Checking HP website for serial : $Serial"
         $driver.Navigate().GoToUrl("https://support.hp.com/au-en/check-warranty")
         # Locate and input the serial number into the form
         $serialnumber = $Serial
@@ -84,7 +84,7 @@ function Get-WarrantyHP {
         $submitButton = $driver.FindElementById("FindMyProduct")
         $submitButton.Click()
         # Wait for the page to load (you might need to adjust the sleep time)
-        Write-Output "Waiting for results......."
+        Write-Host "Waiting for results......."
         Start-Sleep -Seconds 15
         # Check if the error message exists
         try{
@@ -94,22 +94,22 @@ function Get-WarrantyHP {
         }
         if ($null -ne $errorMsgElement) {
             # Error message found
-            Write-Output "Searching for additional SystemSKU......."
+            Write-Host "Searching for additional SystemSKU......."
             Write-Debug "Need Product ID"
             # Define the registry path
             $regPath = "HKLM:\HARDWARE\DESCRIPTION\System\BIOS"
             # Get the value of "SystemSKU" if it exists
             try {
                 $systemSKU = Get-ItemProperty -Path $regPath -Name "SystemSKU" -ErrorAction Stop | Select-Object -ExpandProperty "SystemSKU"
-                Write-Output "SystemSKU value: $systemSKU"
+                Write-Host "SystemSKU value: $systemSKU"
                 $productField = $driver.FindElementById("product-number inputtextPN")
                 $productField.SendKeys($systemSKU)
                 $submitButton = $driver.FindElementById("FindMyProductNumber")
                 $submitButton.Click()
-                Write-Output "Waiting for results......."
+                Write-Host "Waiting for results......."
                 Start-Sleep -Seconds 15
             } catch {
-                Write-Output "SystemSKU key does not exist in the specified registry path."
+                Write-Host "SystemSKU key does not exist in the specified registry path."
                 Exit 0
             }
         } else {
@@ -125,7 +125,7 @@ function Get-WarrantyHP {
             try {
                 $startDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'Start date')]/following-sibling::div[@class='text ng-tns-c72-0']")
             } catch{
-                Write-Output "Could not find warranty Start date"
+                Write-Host "Could not find warranty Start date"
             }
         }
         if($startDateElement){
@@ -143,7 +143,7 @@ function Get-WarrantyHP {
             try {
                 $endDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'End date')]/following-sibling::div[@class='text ng-tns-c72-0']")
             } catch{
-                Write-Output "Could not find warranty End date"
+                Write-Host "Could not find warranty End date"
             }
         }
         if($endDateElement){
@@ -161,7 +161,7 @@ function Get-WarrantyHP {
             try {
                 $warrantyStatusElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'Time Remaining')]/following-sibling::div[@class='text ng-tns-c72-0']")       
             } catch{
-                Write-Output "Could not find warranty Status"
+                Write-Host "Could not find warranty Status"
             } 
         }
         if($warrantyStatusElement){
