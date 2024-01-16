@@ -37,7 +37,7 @@ function Get-WarrantyDell {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Output "Chrome Not Installed or old version"
+            Write-Host "Chrome Not Installed or old version"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -52,9 +52,9 @@ function Get-WarrantyDell {
             return $warObj
         }
         # Navigate to the warranty check URL
-        Write-Output "Checking Dell website for serial : $Serial"
+        Write-Host "Checking Dell website for serial : $Serial"
         $driver.Navigate().GoToUrl("$URL")
-        Write-Output "Waiting for results......."
+        Write-Host "Waiting for results......."
         Start-Sleep -Seconds 25
         
         # Find all elements on the page
@@ -84,7 +84,7 @@ function Get-WarrantyDell {
                 $warrantystatus = "In Warranty"
             }
         } else {
-            Write-Output "No matching text found for warranty status"
+            Write-Host "No matching text found for warranty status"
         }
         # Close the browser
         $driver.Quit()

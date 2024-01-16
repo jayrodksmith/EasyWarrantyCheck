@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 16-01-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Adjust from Write-Output to Write-Host
+- Get-WarrantyEdsys function error handling for no results
+- Added NuGet install before installing Selenium
+- Remove warning for ExecutionPolicy change
+
 ## [0.5.0] - 15-01-2024
 
 ### Added
