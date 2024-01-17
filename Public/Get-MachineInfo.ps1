@@ -33,6 +33,7 @@ function Get-MachineInfo {
 
     $Mfg = if ($Manufacture -eq 'Automatic') {
         $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
+        $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
         switch ($Mfg) {
             "IBM" { $Mfg = "LENOVO" }
             "Hewlett-Packard" { $Mfg = "HP" }
@@ -41,6 +42,7 @@ function Get-MachineInfo {
             {$_ -match "HP"} { $Mfg = "HP" }
             {$_ -match "Edsys"} { $Mfg = "EDSYS" }
             {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
+            {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
             default { $Mfg = $Mfg }
         }
         $Mfg
@@ -50,6 +52,7 @@ function Get-MachineInfo {
     $MachineInfo = [PSCustomObject]@{
         SerialNumber = $SerialNumber
         Manufacturer = $Mfg
+        Model = $model
     }
     return $MachineInfo
 }

@@ -22,7 +22,7 @@ function Get-Warranty {
             # RMM Mode
             [Parameter(Mandatory = $false)]
             [ValidateSet('NinjaRMM', 'None')]
-		    [String]$RMM = 'NinjaRMM',
+            [String]$RMM = 'NinjaRMM',
             #Enable Registry Storing
             [Parameter(Mandatory = $false)]
             [bool]$EnableRegistry = $true,
@@ -30,7 +30,7 @@ function Get-Warranty {
             [String]$RegistryPath = 'HKLM:\SOFTWARE\RMMCustomInfo\',
             # Force Update RMM with details
             [Parameter(Mandatory = $false)]
-		    [bool]$ForceUpdate = $false,
+            [bool]$ForceUpdate = $false,
             # Custom Machine Details
             [Parameter(Mandatory = $false)]
             [String]$Serial = 'Automatic',
@@ -89,9 +89,22 @@ function Get-Warranty {
             "HP"{
                 $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
             }
+            "MICROSOFT"{
+                if($($machineinfo.Model) -like 'SurfaceNotSupportedYet'){
+                    $Warobj = Get-WarrantyMicrosoft -Serial $serialnumber -DateFormat $DateFormat
+                } else{
+                    $Notsupported = $true
+                    Write-Host "Microsoft Model not Supported"
+                    Write-Host "Manufacturer  :  $mfg"
+                    Write-Host "Model         :  $($machineinfo.Model)"
+                }
+                
+            }
             default{
                 $Notsupported = $true
-                Write-Host "Manufacturer not Supported :  $mfg"
+                Write-Host "Manufacturer or Model not Supported"
+                Write-Host "Manufacturer  :  $mfg"
+                Write-Host "Model         :  $($machineinfo.Model)"
             }
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){
