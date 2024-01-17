@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Added
+
+- Microsoft Function (In Devlopment)
+- Model now exported in Get-MachineInfo
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Indent error on main function
+
 ## [0.6.0] - 16-01-2024
 
 ### Added
