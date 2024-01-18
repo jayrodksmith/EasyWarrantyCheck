@@ -28,7 +28,8 @@ function Get-WarrantyToshiba {
         Write-Host "Waiting for results......."
         $url2 = "https://support.dynabook.com/support/warrantyResults?sno=$serial&mpn=$partnumber"
         $url = "https://support.dynabook.com/support/warrantyResults?sno=$serial"
-
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $response = Invoke-WebRequest -Uri $url 
         $responseContent = $response.Content
         $responseJson =  $responseContent | ConvertFrom-Json
