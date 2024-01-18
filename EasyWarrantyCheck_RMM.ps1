@@ -72,7 +72,7 @@ function Get-Warranty {
             $mfg = $Manufacturer
         }
         
-
+        $Notsupported = $false
         switch -Wildcard ($mfg){
             "EDSYS"{
                 $Warobj = Get-WarrantyEdsys -Serial $serialnumber -DateFormat $DateFormat
