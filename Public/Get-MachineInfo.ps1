@@ -30,7 +30,7 @@ function Get-MachineInfo {
     } else {
         $Serial
     }
-
+    
     $Mfg = if ($Manufacturer -eq 'Automatic') {
         $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
         $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model

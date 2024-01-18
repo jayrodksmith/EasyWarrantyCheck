@@ -60,12 +60,23 @@ function Get-WarrantyEdsys {
 
         $tableRows = $table.getElementsByTagName("tr") | Select-Object -Skip 1
         foreach ($row in $tableRows) {
-            $rowData = @($row.getElementsByTagName("td") | ForEach-Object { $_.innerText.Trim() })
-            $obj = [ordered]@{}
-            for ($j = 0; $j -lt $headers.Count; $j++) {
-                $obj[$headers[$j]] = $rowData[$j]
+            if ($row -ne $null) {
+                $rowData = @($row.getElementsByTagName("td") | ForEach-Object { 
+                    if ($_ -ne $null -and $_.innerText -ne $null) {
+                        $_.innerText.Trim()
+                    } else {
+                        ""
+                    }
+                })
+                $obj = [ordered]@{}
+                for ($j = 0; $j -lt $headers.Count; $j++) {
+                    $obj[$headers[$j]] = $rowData[$j]
+                }
+                $objects.Add((New-Object -TypeName PSObject -Property $obj)) | Out-Null
             }
-            $objects.Add((New-Object -TypeName PSObject -Property $obj)) | Out-Null
+            else {
+                Write-Host "Warning: Null row encountered."
+            }
         }
 
         # Output the PowerShell objects table
