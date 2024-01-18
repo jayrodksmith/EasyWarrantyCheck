@@ -504,7 +504,7 @@ function Get-WarrantyEdsys {
         }catch{
             Write-Host $($_.Exception.Message)
         }
-        if($repsonse){
+        if($response){
         # Output the response
         $responseContent = $response.Content
 
@@ -1022,13 +1022,13 @@ function Get-WarrantyToshiba {
         }catch{
             Write-Host $($_.Exception.Message)
         }
-        if($repsonse){
+        if($response){
         $responseContent = $response.Content
         $responseJson =  $responseContent | ConvertFrom-Json
-        $repsonsedetails = $responseJson.commonbean
+        $responsedetails = $responseJson.commonbean
         # Parse the input date
-        $startDate = [DateTime]::ParseExact($($repsonsedetails.warOnsiteDate), "yyyy-MM-dd HH:mm:ss.f", [System.Globalization.CultureInfo]::InvariantCulture)
-        $endDate = [DateTime]::ParseExact($($repsonsedetails.warrantyExpiryDate), "yyyy-MM-dd HH:mm:ss.f", [System.Globalization.CultureInfo]::InvariantCulture)
+        $startDate = [DateTime]::ParseExact($($responsedetails.warOnsiteDate), "yyyy-MM-dd HH:mm:ss.f", [System.Globalization.CultureInfo]::InvariantCulture)
+        $endDate = [DateTime]::ParseExact($($responsedetails.warrantyExpiryDate), "yyyy-MM-dd HH:mm:ss.f", [System.Globalization.CultureInfo]::InvariantCulture)
         # Format the date using the desired format
         $warstartDate = $startDate.ToString($dateformat)
         $warendDate = $endDate.ToString($dateformat)
@@ -1042,7 +1042,7 @@ function Get-WarrantyToshiba {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Invoice' = $null
-                'Warranty Product name' = "$($repsonsedetails.ModelFamily) $($repsonsedetails.ModelName)"
+                'Warranty Product name' = "$($responsedetails.ModelFamily) $($responsedetails.ModelName)"
                 'StartDate' = $warstartDate
                 'EndDate' = $warendDate
                 'Warranty Status' = $warrantystatus
