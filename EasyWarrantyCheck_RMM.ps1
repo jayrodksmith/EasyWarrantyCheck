@@ -111,10 +111,38 @@ function Get-Warranty {
             }
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){
-        Write-WarrantyNinjaRMM -DateFormat $DateFormat -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+        $ParamsNinjaRMM = @{
+            DateFormat = $DateFormat
+        }
+        if ($WarObj.'StartDate') {
+            $ParamsNinjaRMM['Warrantystart'] = $WarObj.'StartDate'
+        }
+        if ($WarObj.'EndDate') {
+            $ParamsNinjaRMM['WarrantyExpiry'] = $WarObj.'EndDate'
+        }
+        if ($WarObj.'Warranty Status') {
+            $ParamsNinjaRMM['WarrantyStatus'] = $WarObj.'Warranty Status'
+        }
+        if ($WarObj.'Invoice') {
+            $ParamsNinjaRMM['Invoicenumber'] = $WarObj.'Invoice'
+        }
+        Write-WarrantyNinjaRMM @ParamsNinjaRMM
     }
     if($EnableRegistry -and ($Notsupported -eq $false)){
-        Write-WarrantyRegistry -RegistryPath $RegistryPath -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+        $Params = @{}
+        if ($WarObj.'StartDate') {
+            $Params['Warrantystart'] = $WarObj.'StartDate'
+        }
+        if ($WarObj.'EndDate') {
+            $Params['WarrantyExpiry'] = $WarObj.'EndDate'
+        }
+        if ($WarObj.'Warranty Status') {
+            $Params['WarrantyStatus'] = $WarObj.'Warranty Status'
+        }
+        if ($WarObj.'Invoice') {
+            $Params['Invoicenumber'] = $WarObj.'Invoice'
+        }
+        Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
 return $Warobj
 }
@@ -576,9 +604,9 @@ function Get-WarrantyEdsys {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $Client
-                'Product Image' = ""
-                'Warranty URL' = ""
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
             }
         }
     return $WarObj
@@ -1246,13 +1274,13 @@ function Write-WarrantyRegistry{
     #>
         [CmdletBinding(SupportsShouldProcess)]
         param(
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Warrantystart,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyExpiry,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyStatus,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Invoicenumber,
             [Parameter(Mandatory = $false)]
             [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
