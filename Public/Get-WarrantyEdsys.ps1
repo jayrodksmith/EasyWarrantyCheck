@@ -42,7 +42,7 @@ function Get-WarrantyEdsys {
         }catch{
             Write-Host $($_.Exception.Message)
         }
-        if($repsonse){
+        if($response){
         # Output the response
         $responseContent = $response.Content
 
