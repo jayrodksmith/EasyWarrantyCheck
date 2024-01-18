@@ -22,7 +22,7 @@ function Get-MachineInfo {
 		[Parameter(Mandatory = $false)]
 		[String]$Serial= 'Automatic',
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA')]
+        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA', 'Intel Corporation')]
 		[String]$Manufacturer= 'Automatic'
 	)
     $SerialNumber = if ($Serial -eq 'Automatic') {
@@ -31,7 +31,7 @@ function Get-MachineInfo {
         $Serial
     }
 
-    $Mfg = if ($Manufacture -eq 'Automatic') {
+    $Mfg = if ($Manufacturer -eq 'Automatic') {
         $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
         $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
         switch ($Mfg) {
@@ -46,7 +46,7 @@ function Get-MachineInfo {
             {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
             {$_ -match "Intel Corporation"} { 
                 $pattern = "^B\d{6}$"
-                if ($serial -match $pattern){
+                if ($SerialNumber -match $pattern){
                     $Mfg = "EDSYS"
                 }
             }
