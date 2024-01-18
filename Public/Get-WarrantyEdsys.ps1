@@ -26,6 +26,8 @@ function Get-WarrantyEdsys {
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"
         Write-Host "Waiting for results......."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string
