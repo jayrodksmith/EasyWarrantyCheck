@@ -37,8 +37,12 @@ function Get-WarrantyEdsys {
         }
 
         # Make the POST request
-        $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
-
+        try {
+            $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($repsonse){
         # Output the response
         $responseContent = $response.Content
 
@@ -117,7 +121,7 @@ function Get-WarrantyEdsys {
             $warEndDate = $date.AddYears($warrantyYears)
             $warEndDate = $warEndDate.ToString($dateformat)
         }
-        
+        }
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial

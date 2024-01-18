@@ -30,7 +30,12 @@ function Get-WarrantyToshiba {
         $url = "https://support.dynabook.com/support/warrantyResults?sno=$serial"
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
         [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
-        $response = Invoke-WebRequest -Uri $url 
+        try{
+            $response = Invoke-WebRequest -Uri $url
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($repsonse){
         $responseContent = $response.Content
         $responseJson =  $responseContent | ConvertFrom-Json
         $repsonsedetails = $responseJson.commonbean
@@ -45,7 +50,7 @@ function Get-WarrantyToshiba {
         }else{
             $warrantystatus = "In Warranty"
         }
-
+        }
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
