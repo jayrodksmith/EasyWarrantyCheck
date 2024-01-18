@@ -1165,8 +1165,8 @@ function Write-WarrantyNinjaRMM {
             $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."
             return $errorMessage
         }
-
-        if(Get-WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
+        $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
+        if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
