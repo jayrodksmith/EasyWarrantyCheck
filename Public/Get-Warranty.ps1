@@ -111,10 +111,38 @@ function Get-Warranty {
             }
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){
-        Write-WarrantyNinjaRMM -DateFormat $DateFormat -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+        $ParamsNinjaRMM = @{
+            DateFormat = $DateFormat
+        }
+        if ($WarObj.'StartDate') {
+            $ParamsNinjaRMM['Warrantystart'] = $WarObj.'StartDate'
+        }
+        if ($WarObj.'EndDate') {
+            $ParamsNinjaRMM['WarrantyExpiry'] = $WarObj.'EndDate'
+        }
+        if ($WarObj.'Warranty Status') {
+            $ParamsNinjaRMM['WarrantyStatus'] = $WarObj.'Warranty Status'
+        }
+        if ($WarObj.'Invoice') {
+            $ParamsNinjaRMM['Invoicenumber'] = $WarObj.'Invoice'
+        }
+        Write-WarrantyNinjaRMM @ParamsNinjaRMM
     }
     if($EnableRegistry -and ($Notsupported -eq $false)){
-        Write-WarrantyRegistry -RegistryPath $RegistryPath -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+        $Params = @{}
+        if ($WarObj.'StartDate') {
+            $Params['Warrantystart'] = $WarObj.'StartDate'
+        }
+        if ($WarObj.'EndDate') {
+            $Params['WarrantyExpiry'] = $WarObj.'EndDate'
+        }
+        if ($WarObj.'Warranty Status') {
+            $Params['WarrantyStatus'] = $WarObj.'Warranty Status'
+        }
+        if ($WarObj.'Invoice') {
+            $Params['Invoicenumber'] = $WarObj.'Invoice'
+        }
+        Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
 return $Warobj
 }

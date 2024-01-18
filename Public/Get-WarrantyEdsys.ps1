@@ -142,9 +142,9 @@ function Get-WarrantyEdsys {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $Client
-                'Product Image' = ""
-                'Warranty URL' = ""
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
             }
         }
     return $WarObj

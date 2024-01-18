@@ -18,13 +18,13 @@ function Write-WarrantyRegistry{
     #>
         [CmdletBinding(SupportsShouldProcess)]
         param(
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Warrantystart,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyExpiry,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyStatus,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Invoicenumber,
             [Parameter(Mandatory = $false)]
             [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
