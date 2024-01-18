@@ -33,22 +33,32 @@ function Write-WarrantyNinjaRMM {
             $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."
             return $errorMessage
         }
-
-        if(Get-WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
+        $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
+        if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
-                    $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                    if ($Warrantystart -match "\d{2}-\d{2}-\d{4}"){
+                        #$Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    } else {
+                        $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                        $Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    }
                     $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
                 }
                 if($WarrantyExpiry){
-                    $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                    if ($WarrantyExpiry -match "\d{2}-\d{2}-\d{4}"){
+                        #$WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    } else {
+                        $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                        $WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    }
                     $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
                 }
-                if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
-                if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
-                if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
-                if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
-                return "Warranty details saved to NinjaRMM"
-                }
-    }
+            if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
+            if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
+            if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
+            if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
+            return "Warranty details saved to NinjaRMM"
+        }
+}

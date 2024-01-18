@@ -26,6 +26,8 @@ function Get-WarrantyEdsys {
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"
         Write-Host "Waiting for results......."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string
@@ -35,8 +37,12 @@ function Get-WarrantyEdsys {
         }
 
         # Make the POST request
-        $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
-
+        try {
+            $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($response){
         # Output the response
         $responseContent = $response.Content
 
@@ -60,12 +66,23 @@ function Get-WarrantyEdsys {
 
         $tableRows = $table.getElementsByTagName("tr") | Select-Object -Skip 1
         foreach ($row in $tableRows) {
-            $rowData = @($row.getElementsByTagName("td") | ForEach-Object { $_.innerText.Trim() })
-            $obj = [ordered]@{}
-            for ($j = 0; $j -lt $headers.Count; $j++) {
-                $obj[$headers[$j]] = $rowData[$j]
+            if ($row -ne $null) {
+                $rowData = @($row.getElementsByTagName("td") | ForEach-Object { 
+                    if ($_ -ne $null -and $_.innerText -ne $null) {
+                        $_.innerText.Trim()
+                    } else {
+                        ""
+                    }
+                })
+                $obj = [ordered]@{}
+                for ($j = 0; $j -lt $headers.Count; $j++) {
+                    $obj[$headers[$j]] = $rowData[$j]
+                }
+                $objects.Add((New-Object -TypeName PSObject -Property $obj)) | Out-Null
             }
-            $objects.Add((New-Object -TypeName PSObject -Property $obj)) | Out-Null
+            else {
+                Write-Host "Warning: Null row encountered."
+            }
         }
 
         # Output the PowerShell objects table
@@ -104,7 +121,7 @@ function Get-WarrantyEdsys {
             $warEndDate = $date.AddYears($warrantyYears)
             $warEndDate = $warEndDate.ToString($dateformat)
         }
-        
+        }
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
@@ -125,9 +142,9 @@ function Get-WarrantyEdsys {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $Client
-                'Product Image' = ""
-                'Warranty URL' = ""
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
             }
         }
     return $WarObj

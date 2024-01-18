@@ -7,7 +7,7 @@ function Write-WarrantyRegistry{
         This function will write details to Registry
     
         .EXAMPLE
-        Write-WarrantyRegistry-Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
+        Write-WarrantyRegistry -Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
     
         .PARAMETER Serial
         Manually set serial
@@ -18,13 +18,13 @@ function Write-WarrantyRegistry{
     #>
         [CmdletBinding(SupportsShouldProcess)]
         param(
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Warrantystart,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyExpiry,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyStatus,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Invoicenumber,
             [Parameter(Mandatory = $false)]
             [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'

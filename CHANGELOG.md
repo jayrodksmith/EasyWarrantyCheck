@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 19-01-2024
+
+### Added
+
+- Microsoft Function (In Devlopment)
+- Model now exported in Get-MachineInfo
+- Toshiba Function Added
+- Edsys Function now supports Intel branded machines
+- Error handling for Web requests
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Indent error on main function
+- Spelling issues
+
 ## [0.6.0] - 16-01-2024
 
 ### Added

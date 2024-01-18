@@ -5,7 +5,10 @@ on:
     branches:
       - main
       - dev
-
+    paths:
+    - 'Public/**'
+    - 'Private/**'
+    
 jobs:
   combine-scripts:
     runs-on: ubuntu-latest

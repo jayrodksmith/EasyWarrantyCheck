@@ -22,7 +22,7 @@ function Get-Warranty {
             # RMM Mode
             [Parameter(Mandatory = $false)]
             [ValidateSet('NinjaRMM', 'None')]
-		    [String]$RMM = 'NinjaRMM',
+            [String]$RMM = 'NinjaRMM',
             #Enable Registry Storing
             [Parameter(Mandatory = $false)]
             [bool]$EnableRegistry = $true,
@@ -30,7 +30,7 @@ function Get-Warranty {
             [String]$RegistryPath = 'HKLM:\SOFTWARE\RMMCustomInfo\',
             # Force Update RMM with details
             [Parameter(Mandatory = $false)]
-		    [bool]$ForceUpdate = $false,
+            [bool]$ForceUpdate = $false,
             # Custom Machine Details
             [Parameter(Mandatory = $false)]
             [String]$Serial = 'Automatic',
@@ -72,7 +72,7 @@ function Get-Warranty {
             $mfg = $Manufacturer
         }
         
-
+        $Notsupported = $false
         switch -Wildcard ($mfg){
             "EDSYS"{
                 $Warobj = Get-WarrantyEdsys -Serial $serialnumber -DateFormat $DateFormat
@@ -89,16 +89,60 @@ function Get-Warranty {
             "HP"{
                 $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
             }
+            "MICROSOFT"{
+                if($($machineinfo.Model) -like 'SurfaceNotSupportedYet'){
+                    $Warobj = Get-WarrantyMicrosoft -Serial $serialnumber -DateFormat $DateFormat
+                } else{
+                    $Notsupported = $true
+                    Write-Host "Microsoft Model not Supported"
+                    Write-Host "Manufacturer  :  $mfg"
+                    Write-Host "Model         :  $($machineinfo.Model)"
+                }
+                
+            }
+            "TOSHIBA"{
+                $Warobj = Get-WarrantyToshiba -Serial $serialnumber -DateFormat $DateFormat
+            }
             default{
                 $Notsupported = $true
-                Write-Host "Manufacturer not Supported :  $mfg"
+                Write-Host "Manufacturer or Model not Supported"
+                Write-Host "Manufacturer  :  $mfg"
+                Write-Host "Model         :  $($machineinfo.Model)"
             }
         }
     if($RMM -eq 'NinjaRMM' -and ($Notsupported -eq $false)){
-        Write-WarrantyNinjaRMM -DateFormat $DateFormat -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+        $ParamsNinjaRMM = @{
+            DateFormat = $DateFormat
+        }
+        if ($WarObj.'StartDate') {
+            $ParamsNinjaRMM['Warrantystart'] = $WarObj.'StartDate'
+        }
+        if ($WarObj.'EndDate') {
+            $ParamsNinjaRMM['WarrantyExpiry'] = $WarObj.'EndDate'
+        }
+        if ($WarObj.'Warranty Status') {
+            $ParamsNinjaRMM['WarrantyStatus'] = $WarObj.'Warranty Status'
+        }
+        if ($WarObj.'Invoice') {
+            $ParamsNinjaRMM['Invoicenumber'] = $WarObj.'Invoice'
+        }
+        Write-WarrantyNinjaRMM @ParamsNinjaRMM
     }
     if($EnableRegistry -and ($Notsupported -eq $false)){
-        Write-WarrantyRegistry -RegistryPath $RegistryPath -Warrantystart $($WarObj.'StartDate') -WarrantyExpiry $($WarObj.'EndDate') -WarrantyStatus $($WarObj.'Warranty Status') -Invoicenumber $($WarObj.'Invoice')
+        $Params = @{}
+        if ($WarObj.'StartDate') {
+            $Params['Warrantystart'] = $WarObj.'StartDate'
+        }
+        if ($WarObj.'EndDate') {
+            $Params['WarrantyExpiry'] = $WarObj.'EndDate'
+        }
+        if ($WarObj.'Warranty Status') {
+            $Params['WarrantyStatus'] = $WarObj.'Warranty Status'
+        }
+        if ($WarObj.'Invoice') {
+            $Params['Invoicenumber'] = $WarObj.'Invoice'
+        }
+        Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
 return $Warobj
 }
@@ -118,8 +162,8 @@ function Get-MachineInfo {
     .PARAMETER Serial
     Manually set serial
 
-    .PARAMETER Manufacture
-    Manually set Manufacture
+    .PARAMETER Manufacturer
+    Manually set Manufacturer
 
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -127,17 +171,18 @@ function Get-MachineInfo {
 		[Parameter(Mandatory = $false)]
 		[String]$Serial= 'Automatic',
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo')]
-		[String]$Manufacture= 'Automatic'
+        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA', 'Intel Corporation')]
+		[String]$Manufacturer= 'Automatic'
 	)
     $SerialNumber = if ($Serial -eq 'Automatic') {
         (Get-CimInstance win32_bios).SerialNumber
     } else {
         $Serial
     }
-
-    $Mfg = if ($Manufacture -eq 'Automatic') {
+    
+    $Mfg = if ($Manufacturer -eq 'Automatic') {
         $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
+        $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
         switch ($Mfg) {
             "IBM" { $Mfg = "LENOVO" }
             "Hewlett-Packard" { $Mfg = "HP" }
@@ -146,15 +191,24 @@ function Get-MachineInfo {
             {$_ -match "HP"} { $Mfg = "HP" }
             {$_ -match "Edsys"} { $Mfg = "EDSYS" }
             {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
+            {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
+            {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
+            {$_ -match "Intel Corporation"} { 
+                $pattern = "^B\d{6}$"
+                if ($SerialNumber -match $pattern){
+                    $Mfg = "EDSYS"
+                }
+            }
             default { $Mfg = $Mfg }
         }
         $Mfg
     } else {
-        $Manufacture
+        $Manufacturer
     }
     $MachineInfo = [PSCustomObject]@{
         SerialNumber = $SerialNumber
         Manufacturer = $Mfg
+        Model = $model
     }
     return $MachineInfo
 }
@@ -313,6 +367,8 @@ function Get-WarrantyDell {
         )
         Get-WebDriver
         Get-SeleniumModule
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $URL = "https://www.dell.com/support/productsmfe/en-us/productdetails?selection=$serial&assettype=svctag&appname=warranty&inccomponents=false&isolated=false"
         $WebDriverPath = "C:\temp\chromedriver-win64"
         # Set Chrome options to run in headless mode
@@ -432,6 +488,8 @@ function Get-WarrantyEdsys {
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"
         Write-Host "Waiting for results......."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string
@@ -441,8 +499,12 @@ function Get-WarrantyEdsys {
         }
 
         # Make the POST request
-        $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
-
+        try {
+            $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($response){
         # Output the response
         $responseContent = $response.Content
 
@@ -466,12 +528,23 @@ function Get-WarrantyEdsys {
 
         $tableRows = $table.getElementsByTagName("tr") | Select-Object -Skip 1
         foreach ($row in $tableRows) {
-            $rowData = @($row.getElementsByTagName("td") | ForEach-Object { $_.innerText.Trim() })
-            $obj = [ordered]@{}
-            for ($j = 0; $j -lt $headers.Count; $j++) {
-                $obj[$headers[$j]] = $rowData[$j]
+            if ($row -ne $null) {
+                $rowData = @($row.getElementsByTagName("td") | ForEach-Object { 
+                    if ($_ -ne $null -and $_.innerText -ne $null) {
+                        $_.innerText.Trim()
+                    } else {
+                        ""
+                    }
+                })
+                $obj = [ordered]@{}
+                for ($j = 0; $j -lt $headers.Count; $j++) {
+                    $obj[$headers[$j]] = $rowData[$j]
+                }
+                $objects.Add((New-Object -TypeName PSObject -Property $obj)) | Out-Null
             }
-            $objects.Add((New-Object -TypeName PSObject -Property $obj)) | Out-Null
+            else {
+                Write-Host "Warning: Null row encountered."
+            }
         }
 
         # Output the PowerShell objects table
@@ -510,7 +583,7 @@ function Get-WarrantyEdsys {
             $warEndDate = $date.AddYears($warrantyYears)
             $warEndDate = $warEndDate.ToString($dateformat)
         }
-        
+        }
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
@@ -531,9 +604,9 @@ function Get-WarrantyEdsys {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $Client
-                'Product Image' = ""
-                'Warranty URL' = ""
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
             }
         }
     return $WarObj
@@ -787,8 +860,14 @@ function Get-WarrantyLenovo {
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
-        $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
+        try {
+            $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
         if($WarReq.id){
             $APIURL = "https://pcsupport.lenovo.com/us/en/products/$($WarReq.id)/warranty"
             $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
@@ -823,6 +902,167 @@ function Get-WarrantyLenovo {
                 'Warranty URL' = $null
             }
         } 
+    return $WarObj
+}
+
+function Get-WarrantyMicrosoft {
+    <#
+        .SYNOPSIS
+        Function to get Microsoft Warranty
+    
+        .DESCRIPTION
+        This function will get Microsoft Warranty
+    
+        .EXAMPLE
+        Get-WarrantyMicrosoft -Serial "0123456789"
+    
+        .PARAMETER Serial
+        Set Serial
+
+        .PARAMETER DateFormat
+        Set DateFormat
+    
+    #>
+        [CmdletBinding(SupportsShouldProcess)]
+        param(
+            [Parameter(Mandatory = $true)]
+            [String]$Serial,
+            [Parameter(Mandatory = $false)]
+            [String]$DateFormat = 'dd-MM-yyyy'
+        )
+        # Define the URL
+        Write-Host "Checking Microsoft website for serial : $Serial"
+        Write-Host "Waiting for results......."
+        $url = "https://surface.managementservices.microsoft.com/api/warranty"
+        $referer = "https://surface.managementservices.microsoft.com"
+
+        # Define the payload as a query string
+        $payload = @{
+            CurrentLanguage = "en-US"
+            SelectedCountry = "AUS"
+            InputSerialNumber = "023959701357"
+            'ValidateCaptchaRequest.CaptchaRequestInput.InputSolution' = 'G5pYd4'
+            'ValidateCaptchaRequest.CaptchaRequestInput.ChallengeId'= 'adbe704a-71b6-4ad1-abd3-61bed015185c'
+            'ValidateCaptchaRequest.ChallengeType'= 'visual'
+            'ValidateCaptchaRequest.CaptchaRequestHeader.ClientRequestId'= '41985dcf-404d-404a-8031-dcae02a9601a'
+            'ValidateCaptchaRequest.CaptchaRequestHeader.CorrelationId'= '47cdd5b2-5d21-4b30-8ef0-7ddad5288875'
+            'ValidateCaptchaRequest.CaptchaRequestHeader.MSRequestId'= 'f9de331c-62a7-44a7-8f06-fff02cd3cd36'
+            '__RequestVerificationToken' = 'CfDJ8Bs2gZRbq61Fh3kwFwaLFZMbObGv4Z0-1hId2kVulzA7ZcraSW-tfVNiIFq0lQUL6PQOXZV6C7ttYVYoWqDsyfgW1-O-SkLxysDK7-2BzuejSIK7YEdbANVS4qbXYKcQZ90xdZwxqqiMDUwjyxHuzlA'
+        }
+        
+        $headers = @{
+            Referer = $referer
+            'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+
+        $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/json" -UseBasicParsing -Headers $headers
+
+        if ($($table.'Warranty Status')) {
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Invoice' = $null
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = $null
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+        } else {
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Invoice' = $null
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = ""
+                'Warranty URL' = ""
+            }
+        }
+    return $WarObj
+}
+
+function Get-WarrantyToshiba {
+    <#
+        .SYNOPSIS
+        Function to get Toshiba Warranty
+    
+        .DESCRIPTION
+        This function will get Toshiba Warranty
+    
+        .EXAMPLE
+        Get-WarrantyToshiba -Serial "123456789"
+    
+        .PARAMETER Serial
+        Set Serial
+
+        .PARAMETER DateFormat
+        Set DateFormat
+    
+    #>
+        [CmdletBinding(SupportsShouldProcess)]
+        param(
+            [Parameter(Mandatory = $true)]
+            [String]$Serial,
+            [Parameter(Mandatory = $false)]
+            [String]$DateFormat = 'dd-MM-yyyy'
+        )
+        # Define the URL
+        Write-Host "Checking Toshiba website for serial : $Serial"
+        Write-Host "Waiting for results......."
+        $url2 = "https://support.dynabook.com/support/warrantyResults?sno=$serial&mpn=$partnumber"
+        $url = "https://support.dynabook.com/support/warrantyResults?sno=$serial"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
+        try{
+            $response = Invoke-WebRequest -Uri $url
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($response){
+        $responseContent = $response.Content
+        $responseJson =  $responseContent | ConvertFrom-Json
+        $responsedetails = $responseJson.commonbean
+        # Parse the input date
+        $startDate = [DateTime]::ParseExact($($responsedetails.warOnsiteDate), "yyyy-MM-dd HH:mm:ss.f", [System.Globalization.CultureInfo]::InvariantCulture)
+        $endDate = [DateTime]::ParseExact($($responsedetails.warrantyExpiryDate), "yyyy-MM-dd HH:mm:ss.f", [System.Globalization.CultureInfo]::InvariantCulture)
+        # Format the date using the desired format
+        $warstartDate = $startDate.ToString($dateformat)
+        $warendDate = $endDate.ToString($dateformat)
+        if ($($responseJson.warranty) -match 'Warranty Expired!'){
+            $warrantystatus = "Expired"
+        }else{
+            $warrantystatus = "In Warranty"
+        }
+        }
+        if ($warrantystatus) {
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Invoice' = $null
+                'Warranty Product name' = "$($responsedetails.ModelFamily) $($responsedetails.ModelName)"
+                'StartDate' = $warstartDate
+                'EndDate' = $warendDate
+                'Warranty Status' = $warrantystatus
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $url
+            }
+        } else {
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Invoice' = $null
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+        }
     return $WarObj
 }
 
@@ -984,25 +1224,35 @@ function Write-WarrantyNinjaRMM {
             $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."
             return $errorMessage
         }
-
-        if(Get-WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
+        $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
+        if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
-                    $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                    if ($Warrantystart -match "\d{2}-\d{2}-\d{4}"){
+                        #$Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    } else {
+                        $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                        $Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    }
                     $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
                 }
                 if($WarrantyExpiry){
-                    $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                    if ($WarrantyExpiry -match "\d{2}-\d{2}-\d{4}"){
+                        #$WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    } else {
+                        $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                        $WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    }
                     $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
                 }
-                if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
-                if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
-                if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
-                if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
-                return "Warranty details saved to NinjaRMM"
-                }
-    }
+            if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
+            if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
+            if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
+            if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
+            return "Warranty details saved to NinjaRMM"
+        }
+}
 
 function Write-WarrantyRegistry{
     <#
@@ -1013,7 +1263,7 @@ function Write-WarrantyRegistry{
         This function will write details to Registry
     
         .EXAMPLE
-        Write-WarrantyRegistry-Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
+        Write-WarrantyRegistry -Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
     
         .PARAMETER Serial
         Manually set serial
@@ -1024,13 +1274,13 @@ function Write-WarrantyRegistry{
     #>
         [CmdletBinding(SupportsShouldProcess)]
         param(
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Warrantystart,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyExpiry,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$WarrantyStatus,
-            [Parameter(Mandatory = $true)]
+            [Parameter(Mandatory = $false)]
             [String]$Invoicenumber,
             [Parameter(Mandatory = $false)]
             [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'

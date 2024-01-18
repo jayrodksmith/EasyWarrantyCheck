@@ -25,8 +25,14 @@ function Get-WarrantyLenovo {
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
-        $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
+        try {
+            $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
         if($WarReq.id){
             $APIURL = "https://pcsupport.lenovo.com/us/en/products/$($WarReq.id)/warranty"
             $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
