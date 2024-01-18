@@ -7,7 +7,7 @@ function Write-WarrantyRegistry{
         This function will write details to Registry
     
         .EXAMPLE
-        Write-WarrantyRegistry-Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
+        Write-WarrantyRegistry -Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
     
         .PARAMETER Serial
         Manually set serial
