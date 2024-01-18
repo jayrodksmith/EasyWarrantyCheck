@@ -38,11 +38,21 @@ function Write-WarrantyNinjaRMM {
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
-                    $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                    if ($Warrantystart -match "\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}") {
+                        $Warrantystart = [DateTime]::ParseExact($Warrantystart, "MM/dd/yyyy HH:mm:ss", $null)
+                        $Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    } else {
+                        $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                    }
                     $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
                 }
                 if($WarrantyExpiry){
-                    $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                    if ($WarrantyExpiry -match "\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}") {
+                        $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, "MM/dd/yyyy HH:mm:ss", $null)
+                        $WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    } else {
+                        $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                    }
                     $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
                 }
                 if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
