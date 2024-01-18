@@ -471,8 +471,12 @@ function Get-WarrantyEdsys {
         }
 
         # Make the POST request
-        $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
-
+        try {
+            $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($repsonse){
         # Output the response
         $responseContent = $response.Content
 
@@ -551,7 +555,7 @@ function Get-WarrantyEdsys {
             $warEndDate = $date.AddYears($warrantyYears)
             $warEndDate = $warEndDate.ToString($dateformat)
         }
-        
+        }
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
@@ -831,7 +835,11 @@ function Get-WarrantyLenovo {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
         [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
-        $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
+        try {
+            $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
         if($WarReq.id){
             $APIURL = "https://pcsupport.lenovo.com/us/en/products/$($WarReq.id)/warranty"
             $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
@@ -981,7 +989,12 @@ function Get-WarrantyToshiba {
         $url = "https://support.dynabook.com/support/warrantyResults?sno=$serial"
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
         [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
-        $response = Invoke-WebRequest -Uri $url 
+        try{
+            $response = Invoke-WebRequest -Uri $url
+        }catch{
+            Write-Host $($_.Exception.Message)
+        }
+        if($repsonse){
         $responseContent = $response.Content
         $responseJson =  $responseContent | ConvertFrom-Json
         $repsonsedetails = $responseJson.commonbean
@@ -996,7 +1009,7 @@ function Get-WarrantyToshiba {
         }else{
             $warrantystatus = "In Warranty"
         }
-
+        }
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
