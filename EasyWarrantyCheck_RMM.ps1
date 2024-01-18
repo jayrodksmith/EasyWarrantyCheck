@@ -339,6 +339,8 @@ function Get-WarrantyDell {
         )
         Get-WebDriver
         Get-SeleniumModule
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $URL = "https://www.dell.com/support/productsmfe/en-us/productdetails?selection=$serial&assettype=svctag&appname=warranty&inccomponents=false&isolated=false"
         $WebDriverPath = "C:\temp\chromedriver-win64"
         # Set Chrome options to run in headless mode
@@ -826,6 +828,8 @@ function Get-WarrantyLenovo {
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
         $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
         if($WarReq.id){
@@ -975,7 +979,8 @@ function Get-WarrantyToshiba {
         Write-Host "Waiting for results......."
         $url2 = "https://support.dynabook.com/support/warrantyResults?sno=$serial&mpn=$partnumber"
         $url = "https://support.dynabook.com/support/warrantyResults?sno=$serial"
-
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
+        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $response = Invoke-WebRequest -Uri $url 
         $responseContent = $response.Content
         $responseJson =  $responseContent | ConvertFrom-Json
