@@ -100,6 +100,9 @@ function Get-Warranty {
                 }
                 
             }
+            "TOSHIBA"{
+                $Warobj = Get-WarrantyToshiba -Serial $serialnumber -DateFormat $DateFormat
+            }
             default{
                 $Notsupported = $true
                 Write-Host "Manufacturer or Model not Supported"

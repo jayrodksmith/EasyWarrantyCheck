@@ -6,6 +6,8 @@
 
 - Microsoft Function (In Devlopment)
 - Model now exported in Get-MachineInfo
+- Toshiba Function (In Development)
+- Edsys Function now supports Intel branded machines
 
 ### Changed
 

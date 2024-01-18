@@ -13,8 +13,8 @@ function Get-MachineInfo {
     .PARAMETER Serial
     Manually set serial
 
-    .PARAMETER Manufacture
-    Manually set Manufacture
+    .PARAMETER Manufacturer
+    Manually set Manufacturer
 
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -22,8 +22,8 @@ function Get-MachineInfo {
 		[Parameter(Mandatory = $false)]
 		[String]$Serial= 'Automatic',
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo')]
-		[String]$Manufacture= 'Automatic'
+        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA')]
+		[String]$Manufacturer= 'Automatic'
 	)
     $SerialNumber = if ($Serial -eq 'Automatic') {
         (Get-CimInstance win32_bios).SerialNumber
@@ -43,11 +43,18 @@ function Get-MachineInfo {
             {$_ -match "Edsys"} { $Mfg = "EDSYS" }
             {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
             {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
+            {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
+            {$_ -match "Intel Corporation"} { 
+                $pattern = "^B\d{6}$"
+                if ($serial -match $pattern){
+                    $Mfg = "EDSYS"
+                }
+            }
             default { $Mfg = $Mfg }
         }
         $Mfg
     } else {
-        $Manufacture
+        $Manufacturer
     }
     $MachineInfo = [PSCustomObject]@{
         SerialNumber = $SerialNumber
