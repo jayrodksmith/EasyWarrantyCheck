@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+# [0.8.0] - 19-01-2024
+
+### Added
+
+### Changed
+
+- Update private functions
+- Workflow to RMM script include private functions
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
 ## [0.7.0] - 19-01-2024
 
 ### Added

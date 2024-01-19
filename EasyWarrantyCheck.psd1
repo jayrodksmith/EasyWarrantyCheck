@@ -12,7 +12,7 @@
     RootModule = 'EasyWarrantyCheck.psm1'
     
     # Version number of this module.
-    ModuleVersion = '0.7.0'
+    ModuleVersion = '0.8.0'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -69,7 +69,17 @@
     # NestedModules = @()
     
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @('Get-Warranty','Get-WarrantyAsus','Get-WarrantyDell','Get-WarrantyEdsys','Get-WarrantyHP','Get-WarrantyLenovo','Get-MachineInfo','Write-WarrantyNinjaRMM','Write-WarrantyRegistry','Get-SelniumModule','Get-WebDriver', 'Get-WarrantyRegistry' ,'Get-WarrantyToshiba')
+    FunctionsToExport = @(
+        'Get-Warranty',
+        'Get-WarrantyAsus',
+        'Get-WarrantyDell',
+        'Get-WarrantyEdsys',
+        'Get-WarrantyHP',
+        'Get-WarrantyLenovo',
+        'Get-MachineInfo',
+        'Get-SelniumModule',
+        'Get-WarrantyToshiba'
+    )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @()
