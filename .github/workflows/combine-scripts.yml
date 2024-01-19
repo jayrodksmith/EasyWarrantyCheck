@@ -21,22 +21,31 @@ jobs:
       shell: pwsh
       id: combine-scripts
       run: |
-        $sourceDirectory = 'Public'
+        $publicDirectory = 'Public'
+        $privateDirectory = 'Private'
         $outputFilePath = 'EasyWarrantyCheck_RMM.ps1'
 
-        $scriptFiles = Get-ChildItem -Path $sourceDirectory -Filter *.ps1 -Recurse
-        
-        $combinedContent = ''
-        
-        foreach ($file in $scriptFiles) {
-            $fileContent = Get-Content $file.FullName -Raw
+        $publicFiles = Get-ChildItem -Path $publicDirectory -Filter *.ps1 -Recurse
+        $privateFiles = Get-ChildItem -Path $privateDirectory -Filter *.ps1 -Recurse
 
-            # Check if the file contains the Get-Warranty function
+        $combinedContent = ''
+        $getWarrantyFunction = $null
+
+        # Process public files
+        foreach ($file in $publicFiles) {
+            $fileContent = Get-Content $file.FullName -Raw
             if ($fileContent -match 'function Get-Warranty {') {
                 $getWarrantyFunction = $fileContent
             } else {
                 $combinedContent += $fileContent + "`n`n"
             }
+        }
+
+        # Process private files
+        foreach ($file in $privateFiles) {
+            $fileContent = Get-Content $file.FullName -Raw
+            # You may want to handle sensitive information in private files appropriately
+            $combinedContent += $fileContent + "`n`n"
         }
         
         # Place the Get-Warranty function at the top

@@ -147,72 +147,6 @@ function Get-Warranty {
 return $Warobj
 }
 
-function Get-MachineInfo {
-<#
-    .SYNOPSIS
-    Function to get information of machine
-
-    .DESCRIPTION
-    This function will get serial number and mfg of system
-
-    .EXAMPLE
-    Get-MachineInfo
-    Get-MachineInfo -Serial "12345678" -Manufacturer "HP" // (Forces Serial and Make)
-
-    .PARAMETER Serial
-    Manually set serial
-
-    .PARAMETER Manufacturer
-    Manually set Manufacturer
-
-#>
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-		[Parameter(Mandatory = $false)]
-		[String]$Serial= 'Automatic',
-        [Parameter(Mandatory = $false)]
-        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA', 'Intel Corporation')]
-		[String]$Manufacturer= 'Automatic'
-	)
-    $SerialNumber = if ($Serial -eq 'Automatic') {
-        (Get-CimInstance win32_bios).SerialNumber
-    } else {
-        $Serial
-    }
-    
-    $Mfg = if ($Manufacturer -eq 'Automatic') {
-        $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
-        $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
-        switch ($Mfg) {
-            "IBM" { $Mfg = "LENOVO" }
-            "Hewlett-Packard" { $Mfg = "HP" }
-            {$_ -match "Asus"} { $Mfg = "ASUS" }
-            {$_ -match "Dell"} { $Mfg = "DELL" }
-            {$_ -match "HP"} { $Mfg = "HP" }
-            {$_ -match "Edsys"} { $Mfg = "EDSYS" }
-            {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
-            {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
-            {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
-            {$_ -match "Intel Corporation"} { 
-                $pattern = "^B\d{6}$"
-                if ($SerialNumber -match $pattern){
-                    $Mfg = "EDSYS"
-                }
-            }
-            default { $Mfg = $Mfg }
-        }
-        $Mfg
-    } else {
-        $Manufacturer
-    }
-    $MachineInfo = [PSCustomObject]@{
-        SerialNumber = $SerialNumber
-        Manufacturer = $Mfg
-        Model = $model
-    }
-    return $MachineInfo
-}
-
 function Get-WarrantyAsus {
     <#
         .SYNOPSIS
@@ -1066,30 +1000,70 @@ function Get-WarrantyToshiba {
     return $WarObj
 }
 
-function Get-SeleniumModule {
-    <#
-        .SYNOPSIS
-        Function to Get SelniumModule
-    
-        .DESCRIPTION
-        This function will get SelniumModule and install if not installed
+function Get-MachineInfo {
+<#
+    .SYNOPSIS
+    Function to get information of machine
 
-        .EXAMPLE
-        Get-SelniumModule
+    .DESCRIPTION
+    This function will get serial number and mfg of system
+
+    .EXAMPLE
+    Get-MachineInfo
+    Get-MachineInfo -Serial "12345678" -Manufacturer "HP" // (Forces Serial and Make)
+
+    .PARAMETER Serial
+    Manually set serial
+
+    .PARAMETER Manufacturer
+    Manually set Manufacturer
+
+#>
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+		[Parameter(Mandatory = $false)]
+		[String]$Serial= 'Automatic',
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA', 'Intel Corporation')]
+		[String]$Manufacturer= 'Automatic'
+	)
+    $SerialNumber = if ($Serial -eq 'Automatic') {
+        (Get-CimInstance win32_bios).SerialNumber
+    } else {
+        $Serial
+    }
     
-    #>
-    try {
-        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
-    }catch{
-        
+    $Mfg = if ($Manufacturer -eq 'Automatic') {
+        $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
+        $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
+        switch ($Mfg) {
+            "IBM" { $Mfg = "LENOVO" }
+            "Hewlett-Packard" { $Mfg = "HP" }
+            {$_ -match "Asus"} { $Mfg = "ASUS" }
+            {$_ -match "Dell"} { $Mfg = "DELL" }
+            {$_ -match "HP"} { $Mfg = "HP" }
+            {$_ -match "Edsys"} { $Mfg = "EDSYS" }
+            {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
+            {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
+            {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
+            {$_ -match "Intel Corporation"} { 
+                $pattern = "^B\d{6}$"
+                if ($SerialNumber -match $pattern){
+                    $Mfg = "EDSYS"
+                }
+            }
+            default { $Mfg = $Mfg }
+        }
+        $Mfg
+    } else {
+        $Manufacturer
     }
-    Import-Module PowerShellGet
-    $seleniumModule = Get-Module -Name Selenium -ListAvailable
-    if (-not $seleniumModule) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module Selenium -Force
+    $MachineInfo = [PSCustomObject]@{
+        SerialNumber = $SerialNumber
+        Manufacturer = $Mfg
+        Model = $model
     }
-    Import-Module Selenium -Force
+    return $MachineInfo
 }
 
 function Get-WarrantyNinjaRMM {
@@ -1126,67 +1100,6 @@ function Get-WarrantyNinjaRMM {
         } else {
             return $false
         }
-    }
-
-function Get-WarrantyRegistry {
-    <#
-        .SYNOPSIS
-        Function to get details from Registry
-    
-        .DESCRIPTION
-        This function will get details from Registry
-    
-        .EXAMPLE
-        Get-WarrantyRegistry
-    
-        .PARAMETER Display
-        Output Warranty Result
-    
-    #>
-        [CmdletBinding(SupportsShouldProcess)]
-        param(
-            [Parameter(Mandatory = $false)]
-            [Switch]$Display,
-            [Parameter(Mandatory = $false)]
-            [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
-        )
-        $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'WarrantyStatus' -ErrorAction SilentlyContinue
-        return ($null -ne $registryValue -and $null -ne $registryValue.WarrantyStatus)
-    }
-
-function Get-WebDriver {
-    <#
-        .SYNOPSIS
-        Function to Get Chrome Web Driver
-    
-        .DESCRIPTION
-        This function will get Chrome Web Driver
-    
-        .EXAMPLE
-        Get-WebDriver
-    
-    #>
-    $webdriverurl = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.109/win64/chromedriver-win64.zip"
-    $WebDrivertemp = "C:\temp"
-    $WebDriverPath = "C:\temp\chromedriver-win64"
-    $driverExists = Test-Path (Join-Path $WebDriverPath "chromedriver.exe")
-    if (-not $driverExists) {
-        try {
-            mkdir C:\Temp -Force | Out-Null
-            $tempFile = [System.IO.Path]::GetTempFileName() + ".zip"
-            $wc = New-Object System.Net.WebClient
-            $wc.DownloadFile($webdriverurl, $tempFile)
-
-            # Extract the zip file
-            Expand-Archive -Path $tempFile -DestinationPath $WebDrivertemp -Force
-
-            # Clean up: Remove temporary file
-            # Remove-Item $tempFile
-        } catch {
-            Write-Host "An error occurred: $_.Exception.Message"
-        }
-    } else {
-    }
     }
 
 function Write-WarrantyNinjaRMM {
@@ -1253,6 +1166,93 @@ function Write-WarrantyNinjaRMM {
             return "Warranty details saved to NinjaRMM"
         }
 }
+
+function Get-SeleniumModule {
+    <#
+        .SYNOPSIS
+        Function to Get SelniumModule
+    
+        .DESCRIPTION
+        This function will get SelniumModule and install if not installed
+
+        .EXAMPLE
+        Get-SelniumModule
+    
+    #>
+    try {
+        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    }catch{
+        
+    }
+    Import-Module PowerShellGet
+    $seleniumModule = Get-Module -Name Selenium -ListAvailable
+    if (-not $seleniumModule) {
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
+        Install-Module Selenium -Force
+    }
+    Import-Module Selenium -Force
+}
+
+function Get-WarrantyRegistry {
+    <#
+        .SYNOPSIS
+        Function to get details from Registry
+    
+        .DESCRIPTION
+        This function will get details from Registry
+    
+        .EXAMPLE
+        Get-WarrantyRegistry
+    
+        .PARAMETER Display
+        Output Warranty Result
+    
+    #>
+        [CmdletBinding(SupportsShouldProcess)]
+        param(
+            [Parameter(Mandatory = $false)]
+            [Switch]$Display,
+            [Parameter(Mandatory = $false)]
+            [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
+        )
+        $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'WarrantyStatus' -ErrorAction SilentlyContinue
+        return ($null -ne $registryValue -and $null -ne $registryValue.WarrantyStatus)
+    }
+
+function Get-WebDriver {
+    <#
+        .SYNOPSIS
+        Function to Get Chrome Web Driver
+    
+        .DESCRIPTION
+        This function will get Chrome Web Driver
+    
+        .EXAMPLE
+        Get-WebDriver
+    
+    #>
+    $webdriverurl = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.109/win64/chromedriver-win64.zip"
+    $WebDrivertemp = "C:\temp"
+    $WebDriverPath = "C:\temp\chromedriver-win64"
+    $driverExists = Test-Path (Join-Path $WebDriverPath "chromedriver.exe")
+    if (-not $driverExists) {
+        try {
+            mkdir C:\Temp -Force | Out-Null
+            $tempFile = [System.IO.Path]::GetTempFileName() + ".zip"
+            $wc = New-Object System.Net.WebClient
+            $wc.DownloadFile($webdriverurl, $tempFile)
+
+            # Extract the zip file
+            Expand-Archive -Path $tempFile -DestinationPath $WebDrivertemp -Force
+
+            # Clean up: Remove temporary file
+            # Remove-Item $tempFile
+        } catch {
+            Write-Host "An error occurred: $_.Exception.Message"
+        }
+    } else {
+    }
+    }
 
 function Write-WarrantyRegistry{
     <#
