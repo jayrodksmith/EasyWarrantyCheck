@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+# [0.9.0] - 26-01-2024
+
+### Added
+
+- Warning message for requiring google chrome
+- Add function to convert epochdatetime
+
+### Changed
+
+- Lenovo warranty now uses "EntireWarrantyPeriod" from json result ( Thanks Basil )
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
 # [0.8.0] - 19-01-2024
 
 ### Added
