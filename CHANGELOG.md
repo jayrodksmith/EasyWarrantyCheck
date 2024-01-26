@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+# [0.9.2] - 26-01-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Fixed lenovo status field
+
 # [0.9.0] - 26-01-2024
 
 ### Added
