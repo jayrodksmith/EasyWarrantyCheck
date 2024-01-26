@@ -36,7 +36,11 @@ function Get-WarrantyHP {
         try{
         $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Host "Chrome Not Installed or old version"
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "Google Chrome not detected"
+            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "###########################"
             Write-Host "Estimating Details from Registry"
             try {
                 $regPath = "HKLM:\SOFTWARE\WOW6432Node\HP\HPActiveSupport\HPSF\Warranty"

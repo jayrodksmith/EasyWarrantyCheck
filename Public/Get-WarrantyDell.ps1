@@ -39,7 +39,11 @@ function Get-WarrantyDell {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Host "Chrome Not Installed or old version"
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "Google Chrome not detected"
+            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "###########################"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null

@@ -40,16 +40,16 @@ function Get-WarrantyLenovo {
             $jsonWarranties = $search.matches.groups[1].value |ConvertFrom-Json
             }
 
-        if ($jsonWarranties.BaseWarranties) {
-            $warfirst = $jsonWarranties.BaseWarranties |sort-object -property [DateTime]End |select-object -first 1
-            $warlatest = $jsonWarranties.BaseWarranties |sort-object -property [DateTime]End |select-object -last 1
-            $warfirst.Start = [DateTime]($warfirst.Start)
-            $warlatest.End = [DateTime]($warlatest.End)
+        if ( $jsonWarranties.EntireWarrantyPeriod) {
+            $warfirst = $jsonWarranties.EntireWarrantyPeriod | Select-Object "Start"
+            $warlatest = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
+            $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
+            $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End)
             $WarObj = [PSCustomObject]@{
                 'Serial' = $jsonWarranties.Serial
                 'Warranty Product name' = $jsonWarranties.ProductName
-                'StartDate' = $warfirst.Start.ToString($dateformat)
-                'EndDate' = $warlatest.End.ToString($dateformat)
+                'StartDate' = $warfirst.Start
+                'EndDate' = $warlatest.End
                 'Warranty Status' = $warlatest.StatusV2
                 'Client' = $null
                 'Product Image' = $jsonWarranties.ProductImage
