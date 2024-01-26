@@ -47,7 +47,7 @@ function Get-WarrantyLenovo {
             $warlatest = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
             $warRemainingdays = $jsonWarranties.Remainingdays
             if($warRemainingdays -gt 0){
-                $warrantystatus = "In Warranty"
+                $warrantystatus = "Active"
             }else{
                 $warrantystatus = "Expired"
             }
