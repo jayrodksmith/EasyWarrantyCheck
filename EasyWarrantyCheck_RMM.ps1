@@ -821,7 +821,9 @@ function Get-WarrantyLenovo {
             $jsonWarranties = $search.matches.groups[1].value |ConvertFrom-Json
             }
 
-        if ( $jsonWarranties.EntireWarrantyPeriod) {
+            $checkenddateexists = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
+
+        if ( $checkenddateexists.end -ne "0") {
             $warfirst = $jsonWarranties.EntireWarrantyPeriod | Select-Object "Start"
             $warlatest = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
             $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
