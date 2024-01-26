@@ -826,6 +826,12 @@ function Get-WarrantyLenovo {
         if ( $checkenddateexists.end -ne "0") {
             $warfirst = $jsonWarranties.EntireWarrantyPeriod | Select-Object "Start"
             $warlatest = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
+            $warRemainingdays = $jsonWarranties.Remainingdays
+            if($warRemainingdays -gt 0){
+                $warrantystatus = "In Warranty"
+            }else{
+                $warrantystatus = "Expired"
+            }
             $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
             $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End)
             $WarObj = [PSCustomObject]@{
@@ -833,7 +839,7 @@ function Get-WarrantyLenovo {
                 'Warranty Product name' = $jsonWarranties.ProductName
                 'StartDate' = $warfirst.Start
                 'EndDate' = $warlatest.End
-                'Warranty Status' = $warlatest.StatusV2
+                'Warranty Status' = $warrantystatus
                 'Client' = $null
                 'Product Image' = $jsonWarranties.ProductImage
                 'Warranty URL' = $jsonWarranties.WarrantyUpgradeURLInfo.WarrantyURL
