@@ -185,7 +185,11 @@ function Get-WarrantyAsus {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Host "Chrome Not Installed or old version"
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "Google Chrome not detected"
+            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "###########################"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -315,7 +319,11 @@ function Get-WarrantyDell {
         try{
             $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Host "Chrome Not Installed or old version"
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "Google Chrome not detected"
+            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "###########################"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -584,7 +592,11 @@ function Get-WarrantyHP {
         try{
         $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
         }catch{
-            Write-Host "Chrome Not Installed or old version"
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "Google Chrome not detected"
+            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "###########################"
             Write-Host "Estimating Details from Registry"
             try {
                 $regPath = "HKLM:\SOFTWARE\WOW6432Node\HP\HPActiveSupport\HPSF\Warranty"
@@ -809,16 +821,16 @@ function Get-WarrantyLenovo {
             $jsonWarranties = $search.matches.groups[1].value |ConvertFrom-Json
             }
 
-        if ($jsonWarranties.BaseWarranties) {
-            $warfirst = $jsonWarranties.BaseWarranties |sort-object -property [DateTime]End |select-object -first 1
-            $warlatest = $jsonWarranties.BaseWarranties |sort-object -property [DateTime]End |select-object -last 1
-            $warfirst.Start = [DateTime]($warfirst.Start)
-            $warlatest.End = [DateTime]($warlatest.End)
+        if ( $jsonWarranties.EntireWarrantyPeriod) {
+            $warfirst = $jsonWarranties.EntireWarrantyPeriod | Select-Object "Start"
+            $warlatest = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
+            $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
+            $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End)
             $WarObj = [PSCustomObject]@{
                 'Serial' = $jsonWarranties.Serial
                 'Warranty Product name' = $jsonWarranties.ProductName
-                'StartDate' = $warfirst.Start.ToString($dateformat)
-                'EndDate' = $warlatest.End.ToString($dateformat)
+                'StartDate' = $warfirst.Start
+                'EndDate' = $warlatest.End
                 'Warranty Status' = $warlatest.StatusV2
                 'Client' = $null
                 'Product Image' = $jsonWarranties.ProductImage
@@ -1066,105 +1078,29 @@ function Get-MachineInfo {
     return $MachineInfo
 }
 
-function Get-WarrantyNinjaRMM {
+function Convert-EpochToDateTime {
     <#
         .SYNOPSIS
-        Function to get details to NinjaRMM
+        Function to convert Epoch time
     
         .DESCRIPTION
-        This function will get details to NinjaRMM
-    
-        .EXAMPLE
-        Get-WarrantyNinjaRMM
-    
-        .PARAMETER Display
-        Output Warranty Result
-    
-    #>
-        [CmdletBinding(SupportsShouldProcess)]
-        param(
-            [Parameter(Mandatory = $false)]
-            [Switch]$Display
-        )
-        
-        $ninjawarrantystartvalue = Ninja-Property-Get $ninjawarrantystart
-        $ninjawarrantystatusvalue = Ninja-Property-Get $ninjawarrantystatus
-        $ninjawarrantyexpiryvalue = Ninja-Property-Get $ninjawarrantyexpiry
-        $ninjainvoicenumbervalue = Ninja-Property-Get $ninjainvoicenumber
-        if ($null -ne $ninjawarrantystatusvalue){
-            if ($Display){
-                return $ninjawarrantystatusvalue
-            } else {
-                return $true
-            } 
-        } else {
-            return $false
-        }
-    }
+        This function will get convert Epoch time to UTC time
 
-function Write-WarrantyNinjaRMM {
-    <#
-        .SYNOPSIS
-        Function to write details to NinjaRMM
-    
-        .DESCRIPTION
-        This function will write details to NinjaRMM
-    
         .EXAMPLE
-        Write-WarrantyNinjaRMM -Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
-    
-        .PARAMETER Serial
-        Manually set serial
-    
-        .PARAMETER Manufacture
-        Manually set Manufacture
+        Convert-EpochToDateTime -EpochTimestamp "Epochtime"
     
     #>
-        [CmdletBinding(SupportsShouldProcess)]
-        param(
-            [Parameter(Mandatory = $false)]
-            [String]$Warrantystart= '',
-            [Parameter(Mandatory = $false)]
-            [String]$WarrantyExpiry= '',
-            [Parameter(Mandatory = $false)]
-            [String]$WarrantyStatus = '',
-            [Parameter(Mandatory = $false)]
-            [String]$Invoicenumber= '',
-            [Parameter(Mandatory = $false)]
-            [String]$dateformat= 'dd-MM-yyyy'
-        )
-        if (-not (Get-Command -Name "Ninja-Property-Set" -ErrorAction SilentlyContinue)) {
-            $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."
-            return $errorMessage
-        }
-        $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
-        if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
-            return "Warranty details already in NinjaRMM"
-        } else {
-                if($Warrantystart){
-                    if ($Warrantystart -match "\d{2}-\d{2}-\d{4}"){
-                        #$Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
-                    } else {
-                        $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
-                        $Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
-                    }
-                    $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
-                }
-                if($WarrantyExpiry){
-                    if ($WarrantyExpiry -match "\d{2}-\d{2}-\d{4}"){
-                        #$WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
-                    } else {
-                        $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
-                        $WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
-                    }
-                    $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
-                }
-            if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
-            if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
-            if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
-            if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
-            return "Warranty details saved to NinjaRMM"
-        }
+    param(
+        [long]$EpochTimestamp,
+        [Parameter(Mandatory = $false)]
+        [String]$DateFormat = 'dd-MM-yyyy'
+    )
+
+    # Convert to DateTime
+    $dateTime = (Get-Date "1970-01-01 00:00:00").AddMilliseconds($EpochTimestamp)
+
+    # Return the readable date
+    return $dateTime.ToString($DateFormat)
 }
 
 function Get-SeleniumModule {
@@ -1311,5 +1247,106 @@ function Write-WarrantyRegistry{
                 return "Warranty details saved to Registry $RegistryPath"
                 }
     }
+
+function Get-WarrantyNinjaRMM {
+    <#
+        .SYNOPSIS
+        Function to get details to NinjaRMM
+    
+        .DESCRIPTION
+        This function will get details to NinjaRMM
+    
+        .EXAMPLE
+        Get-WarrantyNinjaRMM
+    
+        .PARAMETER Display
+        Output Warranty Result
+    
+    #>
+        [CmdletBinding(SupportsShouldProcess)]
+        param(
+            [Parameter(Mandatory = $false)]
+            [Switch]$Display
+        )
+        
+        $ninjawarrantystartvalue = Ninja-Property-Get $ninjawarrantystart
+        $ninjawarrantystatusvalue = Ninja-Property-Get $ninjawarrantystatus
+        $ninjawarrantyexpiryvalue = Ninja-Property-Get $ninjawarrantyexpiry
+        $ninjainvoicenumbervalue = Ninja-Property-Get $ninjainvoicenumber
+        if ($null -ne $ninjawarrantystatusvalue){
+            if ($Display){
+                return $ninjawarrantystatusvalue
+            } else {
+                return $true
+            } 
+        } else {
+            return $false
+        }
+    }
+
+function Write-WarrantyNinjaRMM {
+    <#
+        .SYNOPSIS
+        Function to write details to NinjaRMM
+    
+        .DESCRIPTION
+        This function will write details to NinjaRMM
+    
+        .EXAMPLE
+        Write-WarrantyNinjaRMM -Warrantystart 'value' -WarrantyExpiry 'value' -WarrantyStatus 'value' -Invoicenumber 'value'
+    
+        .PARAMETER Serial
+        Manually set serial
+    
+        .PARAMETER Manufacture
+        Manually set Manufacture
+    
+    #>
+        [CmdletBinding(SupportsShouldProcess)]
+        param(
+            [Parameter(Mandatory = $false)]
+            [String]$Warrantystart= '',
+            [Parameter(Mandatory = $false)]
+            [String]$WarrantyExpiry= '',
+            [Parameter(Mandatory = $false)]
+            [String]$WarrantyStatus = '',
+            [Parameter(Mandatory = $false)]
+            [String]$Invoicenumber= '',
+            [Parameter(Mandatory = $false)]
+            [String]$dateformat= 'dd-MM-yyyy'
+        )
+        if (-not (Get-Command -Name "Ninja-Property-Set" -ErrorAction SilentlyContinue)) {
+            $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."
+            return $errorMessage
+        }
+        $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
+        if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
+            return "Warranty details already in NinjaRMM"
+        } else {
+                if($Warrantystart){
+                    if ($Warrantystart -match "\d{2}-\d{2}-\d{4}"){
+                        #$Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    } else {
+                        $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
+                        $Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                    }
+                    $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
+                }
+                if($WarrantyExpiry){
+                    if ($WarrantyExpiry -match "\d{2}-\d{2}-\d{4}"){
+                        #$WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    } else {
+                        $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
+                        $WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                    }
+                    $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
+                }
+            if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
+            if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
+            if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
+            if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
+            return "Warranty details saved to NinjaRMM"
+        }
+}
 
 Get-Warranty
