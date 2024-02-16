@@ -144,6 +144,10 @@ function Get-Warranty {
         }
         Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
+if($null -eq $($Warobj.'EndDate')) {
+    Write-Output "No Warranty End Date Found"
+    $global:LASTEXITCODE = 1
+}
 return $Warobj
 }
 
