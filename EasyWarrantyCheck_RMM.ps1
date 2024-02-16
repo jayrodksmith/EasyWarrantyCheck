@@ -146,9 +146,12 @@ function Get-Warranty {
     }
 if($null -eq $($Warobj.'EndDate')) {
     Write-Output "No Warranty End Date Found"
-    $global:LASTEXITCODE = 1
+    $Warobj
+    Start-Sleep -Seconds 5
+    exit 1
+} else {
+    return $warobj
 }
-return $Warobj
 }
 
 function Get-WarrantyAsus {
