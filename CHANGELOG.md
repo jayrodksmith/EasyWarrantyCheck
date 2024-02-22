@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+# [0.9.3] - 22-02-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Fixed google webdriver link
+
 # [0.9.2] - 26-01-2024
 
 ### Added
