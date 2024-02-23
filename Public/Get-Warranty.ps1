@@ -177,7 +177,7 @@ function Get-Warranty {
         }
         Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
-    if($null -eq $($Warobj.'EndDate') -and !$ServerMode.IsPresent) {
+    if($null -eq $($Warobj.'EndDate') -and $ServerMode.IsPresent) {
         return $null
     }
     elseif($null -eq $($Warobj.'EndDate')) {
