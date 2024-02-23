@@ -81,7 +81,8 @@ function Get-WarrantyHP {
                 Remove-Module Selenium
                 return $warObj
             }
-        } else {
+        }
+        else {
             Write-Error "Google Chrome not detected"
         }
     }
@@ -105,7 +106,22 @@ function Get-WarrantyHP {
     catch {
         Write-Debug "No Product Model required"
     }
-    if ($null -ne $errorMsgElement) {
+
+    if ($null -ne $errorMsgElement -and $null -ne $SystemSKU) {
+        # Error message found
+        Write-Host "Using SystemSKU input"
+        Write-Debug "Need Product ID"
+        $productField = $driver.FindElementById("product-number inputtextPN")
+        $productField.SendKeys($SystemSKU)
+        $submitButton = $driver.FindElementById("FindMyProductNumber")
+        $submitButton.Click()
+        Write-Host "Waiting for results......."
+        Start-Sleep -Seconds 15
+    }
+    elseif ($null -ne $errorMsgElement -and $null -ne $SystemSKU -and $global:ServerMode -eq $true) {
+        Write-Host "SystemSKU not provided"
+    }
+    elseif ($null -ne $errorMsgElement -and $global:ServerMode -ne $true) {
         # Error message found
         Write-Host "Searching for additional SystemSKU......."
         Write-Debug "Need Product ID"
@@ -126,19 +142,8 @@ function Get-WarrantyHP {
             Write-Host "SystemSKU key does not exist in the specified registry path."
             Exit 0
         }
-    } elseif ($null -ne $errorMsgElement -and $null -ne $SystemSKU) {
-        # Error message found
-        Write-Host "Using SystemSKU input"
-        Write-Debug "Need Product ID"
-        $productField = $driver.FindElementById("product-number inputtextPN")
-        $productField.SendKeys($SystemSKU)
-        $submitButton = $driver.FindElementById("FindMyProductNumber")
-        $submitButton.Click()
-        Write-Host "Waiting for results......."
-        Start-Sleep -Seconds 15
-    } elseif ($null -ne $errorMsgElement -and $null -eq $SystemSKU) {
-        Write-Host "SystemSKU not provided"
-    } 
+    }
+
     else {
         # Continue   
     }

@@ -101,6 +101,7 @@ function Get-Warranty {
     } else {
         $serialnumber = $serial
         $mfg = $Manufacturer
+        $global:ServerMode = $true
     }
         
     $Notsupported = $false
@@ -176,7 +177,10 @@ function Get-Warranty {
         }
         Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
-    if($null -eq $($Warobj.'EndDate')) {
+    if($null -eq $($Warobj.'EndDate') -and !$ServerMode.IsPresent) {
+        return $null
+    }
+    elseif($null -eq $($Warobj.'EndDate')) {
     Write-Output "No Warranty End Date Found"
     $Warobj
     Start-Sleep -Seconds 5
