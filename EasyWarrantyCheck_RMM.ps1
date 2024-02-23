@@ -144,7 +144,14 @@ function Get-Warranty {
         }
         Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
-return $Warobj
+if($null -eq $($Warobj.'EndDate')) {
+    Write-Output "No Warranty End Date Found"
+    $Warobj
+    Start-Sleep -Seconds 5
+    exit 1
+} else {
+    return $warobj
+}
 }
 
 function Get-WarrantyAsus {
@@ -1175,7 +1182,11 @@ function Get-WebDriver {
         Get-WebDriver
     
     #>
-    $webdriverurl = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.109/win64/chromedriver-win64.zip"
+    # Retrieve JSON content from the URL
+    $jsonUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
+    $jsonString = Invoke-RestMethod -Uri $jsonUrl
+    # Find the URL for chromedriver for win64 platform in the stable channel
+    $webdriverurl = $jsonString.channels.Stable.downloads.chromedriver | Where-Object { $_.platform -eq "win64" } | Select-Object -ExpandProperty url
     $WebDrivertemp = "C:\temp"
     $WebDriverPath = "C:\temp\chromedriver-win64"
     $driverExists = Test-Path (Join-Path $WebDriverPath "chromedriver.exe")

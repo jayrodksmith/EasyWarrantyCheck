@@ -176,5 +176,12 @@ function Get-Warranty {
         }
         Write-WarrantyRegistry -RegistryPath $RegistryPath @Params
     }
-    return $Warobj
+    if($null -eq $($Warobj.'EndDate')) {
+    Write-Output "No Warranty End Date Found"
+    $Warobj
+    Start-Sleep -Seconds 5
+    exit 1
+} else {
+    return $warobj
+}
 }
