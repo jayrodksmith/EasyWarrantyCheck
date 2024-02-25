@@ -119,7 +119,12 @@ function Get-Warranty {
             $Warobj = Get-WarrantyDell -Serial $serialnumber -DateFormat $DateFormat
         }
         "HP" {
-            $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
+            if ($HpSystemSKU) {
+                $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat -SystemSKU $HpSystemSKU
+            }
+            else {
+                $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
+            }
         }
         "MICROSOFT" {
             if ($($machineinfo.Model) -like 'SurfaceNotSupportedYet') {
