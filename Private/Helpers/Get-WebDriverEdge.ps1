@@ -10,6 +10,7 @@ function Get-WebDriverEdge {
         Get-WebDriverEdge
     
     #>
+    # https://itconstructors.com/automate-update-of-selenium-web-driver-powershell/
     $webdriverurl = "https://msedgedriver.azureedge.net/122.0.2365.66/edgedriver_win64.zip"
     $WebDrivertemp = "C:\temp"
     $WebDriverPath = "C:\temp\edgedriver-win64"
