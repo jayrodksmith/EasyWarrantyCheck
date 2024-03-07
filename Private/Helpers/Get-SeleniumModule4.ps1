@@ -19,7 +19,7 @@ function Get-SeleniumModule {
     $seleniumModule = Get-Module -Name Selenium -ListAvailable
     if (-not $seleniumModule) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module Selenium -Force
+        Install-Module -Name Selenium -AllowPrerelease
     }
     Import-Module Selenium -Force
 }

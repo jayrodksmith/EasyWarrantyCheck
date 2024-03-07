@@ -23,21 +23,12 @@ function Get-WarrantyDell {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Get-WebDriver
+        Get-WebDriver -WebDriver $Seleniumdrivermode
         Get-SeleniumModule
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
-        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
-        $URL = "https://www.dell.com/support/productsmfe/en-us/productdetails?selection=$serial&assettype=svctag&appname=warranty&inccomponents=false&isolated=false"
-        $WebDriverPath = "C:\temp\chromedriver-win64"
-        # Set Chrome options to run in headless mode
-        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-        $ChromeService.HideCommandPromptWindow = $true
-        $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-        $chromeOptions.AddArgument("headless")
-        $chromeOptions.AddArgument("--log-level=3")
+        $googlechrome = Test-SoftwareInstalled -SoftwareName "Google Chrome"
         # Start a new browser session with headless mode
         try{
-            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
             Write-Host "###########################"
             Write-Host "WARNING"
@@ -59,6 +50,7 @@ function Get-WarrantyDell {
         }
         # Navigate to the warranty check URL
         Write-Host "Checking Dell website for serial : $Serial"
+        $URL = "https://www.dell.com/support/productsmfe/en-us/productdetails?selection=$serial&assettype=svctag&appname=warranty&inccomponents=false&isolated=false"
         $driver.Navigate().GoToUrl("$URL")
         Write-Host "Waiting for results......."
         Start-Sleep -Seconds 25

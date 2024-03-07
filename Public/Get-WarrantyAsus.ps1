@@ -23,18 +23,12 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Get-WebDriver
+        Get-WebDriver -WebDriver $Seleniumdrivermode
         Get-SeleniumModule
-        $WebDriverPath = "C:\temp\chromedriver-win64"
-        # Set Chrome options to run in headless mode
-        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-        $ChromeService.HideCommandPromptWindow = $true
-        $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-        $chromeOptions.AddArgument("headless")
-        $chromeOptions.AddArgument("--log-level=3")
+        $googlechrome = Test-SoftwareInstalled -SoftwareName "Google Chrome"
         # Start a new browser session with headless mode
         try{
-            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
             Write-Host "###########################"
             Write-Host "WARNING"
@@ -62,6 +56,12 @@ function Get-WarrantyAsus {
         $inputField = $driver.FindElementById("warrantyNumber")
         $inputField.SendKeys($serialnumber)
         #Accept Checkbox
+        try{
+            $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
+            $submitcheckcookiesButton.Click()
+        } catch{
+
+        }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
         # Find and click the submit button

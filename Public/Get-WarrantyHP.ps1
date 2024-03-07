@@ -25,18 +25,12 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $false)]
         [String]$SystemSKU
     )
-    Get-WebDriver
+    Get-WebDriver -WebDriver $Seleniumdrivermode
     Get-SeleniumModule
-    $WebDriverPath = "C:\temp\chromedriver-win64"
-    # Set Chrome options to run in headless mode
-    $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-    $ChromeService.HideCommandPromptWindow = $true
-    $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-    $chromeOptions.AddArgument("headless")
-    $chromeOptions.AddArgument("--log-level=3")
+    $googlechrome = Test-SoftwareInstalled -SoftwareName "Google Chrome"
     # Start a new browser session with headless mode
     try {
-        $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
+        $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
