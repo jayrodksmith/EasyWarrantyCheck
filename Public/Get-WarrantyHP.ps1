@@ -25,9 +25,14 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $false)]
         [String]$SystemSKU
     )
-    Get-WebDriver -WebDriver $Seleniumdrivermode
-    Get-SeleniumModule
-    $googlechrome = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        Get-WebDriver -WebDriver $Seleniumdrivermode
+        Get-SeleniumModule
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
     # Start a new browser session with headless mode
     try {
         $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true

@@ -17,10 +17,12 @@ function Start-SeleniumModule {
         [String]$WebDriver = "Chrome",
 
         [Parameter(Mandatory = $false)]
-        [bool]$Headless = $true
+        [bool]$Headless = $true,
+
+        [Parameter(Mandatory = $false)]
+        [String]$WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
     )
     if($WebDriver  -eq "Edge"){
-        $WebDriverPath = "C:\temp\edgedriver-win64"
         $EdgeService = [OpenQA.Selenium.Edge.EdgeDriverService]::CreateDefaultService($WebDriverPath, 'msedgedriver.exe')
         $EdgeService.HideCommandPromptWindow = $true
         $EdgeService.UseVerboseLogging = $true
@@ -38,7 +40,6 @@ function Start-SeleniumModule {
         
     } 
     if($WebDriver -eq "Chrome"){
-        $WebDriverPath = "C:\temp\chromedriver-win64"
         $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
         $ChromeService.HideCommandPromptWindow = $true
         $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()

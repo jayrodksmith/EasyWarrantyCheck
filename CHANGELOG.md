@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+# [0.9.9] - 08-03-2024
+
+### Added
+
+- Beta Edge surpport
+
+### Changed
+
+- WebDriver now checks if exists
+- WebDriver now has check for Chrome/Edge
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
 # [0.9.3] - 22-02-2024
 
 ### Added

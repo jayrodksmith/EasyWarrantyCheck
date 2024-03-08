@@ -25,16 +25,35 @@ function Get-WarrantyDell {
         )
         Get-WebDriver -WebDriver $Seleniumdrivermode
         Get-SeleniumModule
-        $googlechrome = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
+        if ($browserinstalled.Installed -eq $false){
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
+            Write-Host "###########################"
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium
+            return $warObj
+        }
         # Start a new browser session with headless mode
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Host "###########################"
-            Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
-            Write-Host "###########################"
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
