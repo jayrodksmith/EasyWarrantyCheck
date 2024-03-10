@@ -116,7 +116,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        Stop-SeleniumModule
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)

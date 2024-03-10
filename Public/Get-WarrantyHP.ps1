@@ -227,7 +227,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    Stop-SeleniumModule
+    Stop-SeleniumModule -WebDriver $Seleniumdrivermode
 
     if ($endDateText) {
         $warfirst = $startDateText

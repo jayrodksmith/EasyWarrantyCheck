@@ -1,10 +1,10 @@
-function Get-SeleniumModule {
+function Get-SeleniumModule4 {
     <#
         .SYNOPSIS
-        Function to Get SeleniumModule
+        Function to Get SeleniumModule4
     
         .DESCRIPTION
-        This function will get SeleniumModule and install if not installed
+        This function will get SeleniumModule4 and install if not installed
 
         .EXAMPLE
         Get-SelniumModule

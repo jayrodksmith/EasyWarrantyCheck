@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+# [1.0.0] - 10-03-2024
+
+### Added
+
+- Edge Support running as user context
+
+### Changed
+
+- Edge webdriver runs as user context
+- Rewrite of WebDriver install
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Stopping Selenium errors
+
 # [0.9.9] - 08-03-2024
 
 ### Added
