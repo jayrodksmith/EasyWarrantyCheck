@@ -104,8 +104,7 @@ function Get-WarrantyDell {
             Write-Host "No matching text found for warranty status"
         }
         # Close the browser
-        $driver.Quit()
-        Remove-Module Selenium
+        Stop-SeleniumModule
 
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
