@@ -321,7 +321,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        Stop-SeleniumModule
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
@@ -458,7 +458,7 @@ function Get-WarrantyDell {
             Write-Host "No matching text found for warranty status"
         }
         # Close the browser
-        Stop-SeleniumModule
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
 
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
@@ -865,7 +865,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    Stop-SeleniumModule
+    Stop-SeleniumModule -WebDriver $Seleniumdrivermode
 
     if ($endDateText) {
         $warfirst = $startDateText
@@ -1276,13 +1276,13 @@ function Get-SeleniumModule {
     Import-Module Selenium -Force
 }
 
-function Get-SeleniumModule {
+function Get-SeleniumModule4 {
     <#
         .SYNOPSIS
-        Function to Get SeleniumModule
+        Function to Get SeleniumModule4
     
         .DESCRIPTION
-        This function will get SeleniumModule and install if not installed
+        This function will get SeleniumModule4 and install if not installed
 
         .EXAMPLE
         Get-SelniumModule
@@ -1656,8 +1656,8 @@ function Stop-SeleniumModule {
         This function will Stop Selenium Module
     
         .EXAMPLE
-        Stop-SeleniumModule -Driver "Chrome"
-        Stop-SeleniumModule -Driver "Edge"
+        Stop-SeleniumModule -WebDriver "Chrome"
+        Stop-SeleniumModule -WebDriver "Edge"
 
     #>
     param(
@@ -1682,10 +1682,8 @@ function Stop-SeleniumModule {
         foreach ($process in $headlessEdgeProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
-                Stop-Process -Id $processID -Force
-                Write-Host "Terminated headless Microsoft Edge process with ID $processID"
+                Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
-                Write-Host "Failed to retrieve process ID for a headless Microsoft Edge process."
             }
         }
 
@@ -1696,17 +1694,16 @@ function Stop-SeleniumModule {
         foreach ($process in $driverProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
-                Stop-Process -Id $processID -Force
-                Write-Host "Terminated msedgedriver process with ID $processID"
+                Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
-                Write-Host "Failed to retrieve process ID for a msedgedriver process."
+
             }
         }
-        Remove-Module Selenium
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null 
     } 
     if($WebDriver -eq "Chrome"){
         $driver.quit()
-        Remove-Module Selenium
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null
     }
 }
 
