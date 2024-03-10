@@ -23,7 +23,12 @@ function Get-Warranty {
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [ValidateSet('NinjaRMM', 'None')]
         [String]$RMM = 'NinjaRMM',
-    
+        
+        # Web Driver mode, Edge or Chrome ( Edge Beta Support )
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
+        [ValidateSet('Chrome', 'Edge')]
+        [String]$Seleniumdrivermode = 'Chrome',
+
         # ServerMode, exclusive to CentralNinja but included in Default for consistency
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [Switch]$ServerMode,
@@ -83,6 +88,9 @@ function Get-Warranty {
     }
     if ($ForceUpdate -eq $true) {
         Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
+    }
+    if ($Seleniumdrivermode) {
+        Set-Variable Seleniumdrivermode -Value $Seleniumdrivermode -Scope Global -option ReadOnly -Force
     }
     if ($PSCmdlet.ParameterSetName -eq 'Default') {
         $machineinfo = Get-MachineInfo

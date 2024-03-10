@@ -1,10 +1,10 @@
-function Get-SeleniumModule {
+function Get-SeleniumModule4 {
     <#
         .SYNOPSIS
-        Function to Get SeleniumModule
+        Function to Get SeleniumModule4
     
         .DESCRIPTION
-        This function will get SeleniumModule and install if not installed
+        This function will get SeleniumModule4 and install if not installed
 
         .EXAMPLE
         Get-SelniumModule
@@ -19,7 +19,7 @@ function Get-SeleniumModule {
     $seleniumModule = Get-Module -Name Selenium -ListAvailable
     if (-not $seleniumModule) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module Selenium -Force
+        Install-Module -Name Selenium -AllowPrerelease
     }
     Import-Module Selenium -Force
 }

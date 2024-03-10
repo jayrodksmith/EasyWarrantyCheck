@@ -23,24 +23,37 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Get-WebDriver
+        Get-WebDriver -WebDriver $Seleniumdrivermode
         Get-SeleniumModule
-        $WebDriverPath = "C:\temp\chromedriver-win64"
-        # Set Chrome options to run in headless mode
-        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-        $ChromeService.HideCommandPromptWindow = $true
-        $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-        $chromeOptions.AddArgument("headless")
-        $chromeOptions.AddArgument("--log-level=3")
-        # Start a new browser session with headless mode
-        try{
-            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
-        }catch{
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
+        if ($browserinstalled.Installed -eq $false){
             Write-Host "###########################"
             Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
             Write-Host "###########################"
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium
+            return $warObj
+        }
+        # Start a new browser session with headless mode
+        try{
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+        }catch{
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -62,6 +75,12 @@ function Get-WarrantyAsus {
         $inputField = $driver.FindElementById("warrantyNumber")
         $inputField.SendKeys($serialnumber)
         #Accept Checkbox
+        try{
+            $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
+            $submitcheckcookiesButton.Click()
+        } catch{
+
+        }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
         # Find and click the submit button
@@ -97,8 +116,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        $driver.Quit()
-        Remove-Module Selenium
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)

@@ -23,7 +23,12 @@ function Get-Warranty {
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [ValidateSet('NinjaRMM', 'None')]
         [String]$RMM = 'NinjaRMM',
-    
+        
+        # Web Driver mode, Edge or Chrome ( Edge Beta Support )
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
+        [ValidateSet('Chrome', 'Edge')]
+        [String]$Seleniumdrivermode = 'Chrome',
+
         # ServerMode, exclusive to CentralNinja but included in Default for consistency
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [Switch]$ServerMode,
@@ -83,6 +88,9 @@ function Get-Warranty {
     }
     if ($ForceUpdate -eq $true) {
         Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
+    }
+    if ($Seleniumdrivermode) {
+        Set-Variable Seleniumdrivermode -Value $Seleniumdrivermode -Scope Global -option ReadOnly -Force
     }
     if ($PSCmdlet.ParameterSetName -eq 'Default') {
         $machineinfo = Get-MachineInfo
@@ -220,24 +228,37 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Get-WebDriver
+        Get-WebDriver -WebDriver $Seleniumdrivermode
         Get-SeleniumModule
-        $WebDriverPath = "C:\temp\chromedriver-win64"
-        # Set Chrome options to run in headless mode
-        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-        $ChromeService.HideCommandPromptWindow = $true
-        $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-        $chromeOptions.AddArgument("headless")
-        $chromeOptions.AddArgument("--log-level=3")
-        # Start a new browser session with headless mode
-        try{
-            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
-        }catch{
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
+        if ($browserinstalled.Installed -eq $false){
             Write-Host "###########################"
             Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
             Write-Host "###########################"
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium
+            return $warObj
+        }
+        # Start a new browser session with headless mode
+        try{
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+        }catch{
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -259,6 +280,12 @@ function Get-WarrantyAsus {
         $inputField = $driver.FindElementById("warrantyNumber")
         $inputField.SendKeys($serialnumber)
         #Accept Checkbox
+        try{
+            $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
+            $submitcheckcookiesButton.Click()
+        } catch{
+
+        }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
         # Find and click the submit button
@@ -294,8 +321,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        $driver.Quit()
-        Remove-Module Selenium
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
@@ -351,27 +377,37 @@ function Get-WarrantyDell {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Get-WebDriver
+        Get-WebDriver -WebDriver $Seleniumdrivermode
         Get-SeleniumModule
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
-        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
-        $URL = "https://www.dell.com/support/productsmfe/en-us/productdetails?selection=$serial&assettype=svctag&appname=warranty&inccomponents=false&isolated=false"
-        $WebDriverPath = "C:\temp\chromedriver-win64"
-        # Set Chrome options to run in headless mode
-        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-        $ChromeService.HideCommandPromptWindow = $true
-        $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-        $chromeOptions.AddArgument("headless")
-        $chromeOptions.AddArgument("--log-level=3")
-        # Start a new browser session with headless mode
-        try{
-            $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
-        }catch{
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
+        if ($browserinstalled.Installed -eq $false){
             Write-Host "###########################"
             Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
             Write-Host "###########################"
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium
+            return $warObj
+        }
+        # Start a new browser session with headless mode
+        try{
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+        }catch{
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -387,6 +423,7 @@ function Get-WarrantyDell {
         }
         # Navigate to the warranty check URL
         Write-Host "Checking Dell website for serial : $Serial"
+        $URL = "https://www.dell.com/support/productsmfe/en-us/productdetails?selection=$serial&assettype=svctag&appname=warranty&inccomponents=false&isolated=false"
         $driver.Navigate().GoToUrl("$URL")
         Write-Host "Waiting for results......."
         Start-Sleep -Seconds 25
@@ -421,8 +458,7 @@ function Get-WarrantyDell {
             Write-Host "No matching text found for warranty status"
         }
         # Close the browser
-        $driver.Quit()
-        Remove-Module Selenium
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
 
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
@@ -478,8 +514,6 @@ function Get-WarrantyEdsys {
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"
         Write-Host "Waiting for results......."
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
-        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $url = "https://edsys.com.au/check-warranty-status/"
 
         # Define the payload as a query string
@@ -629,25 +663,24 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $false)]
         [String]$SystemSKU
     )
-    Get-WebDriver
-    Get-SeleniumModule
-    $WebDriverPath = "C:\temp\chromedriver-win64"
-    # Set Chrome options to run in headless mode
-    $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
-    $ChromeService.HideCommandPromptWindow = $true
-    $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
-    $chromeOptions.AddArgument("headless")
-    $chromeOptions.AddArgument("--log-level=3")
+        Get-WebDriver -WebDriver $Seleniumdrivermode
+        Get-SeleniumModule
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
     # Start a new browser session with headless mode
     try {
-        $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
+        $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
             Write-Host "###########################"
             Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
             Write-Host "###########################"
             Write-Host "Estimating Details from Registry"
             try {
@@ -832,8 +865,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    $driver.Quit()
-    Remove-Module Selenium
+    Stop-SeleniumModule -WebDriver $Seleniumdrivermode
 
     if ($endDateText) {
         $warfirst = $startDateText
@@ -891,8 +923,6 @@ function Get-WarrantyLenovo {
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
-        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         $APIURL = "https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=$Serial"
         try {
             $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
@@ -1054,8 +1084,6 @@ function Get-WarrantyToshiba {
         Write-Host "Waiting for results......."
         $url2 = "https://support.dynabook.com/support/warrantyResults?sno=$serial&mpn=$partnumber"
         $url = "https://support.dynabook.com/support/warrantyResults?sno=$serial"
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls, [Net.SecurityProtocolType]::Tls11, [Net.SecurityProtocolType]::Tls12, [Net.SecurityProtocolType]::Ssl3
-        [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
         try{
             $response = Invoke-WebRequest -Uri $url
         }catch{
@@ -1196,13 +1224,39 @@ function Convert-EpochToDateTime {
     return $dateTime.ToString($DateFormat)
 }
 
+function Get-RunAsUserModule {
+    <#
+        .SYNOPSIS
+        Function to Get RunAsUser
+    
+        .DESCRIPTION
+        This function will get RunAsUser and install if not installed
+
+        .EXAMPLE
+        Get-RunAsUser
+    
+    #>
+    try {
+        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    }catch{
+        
+    }
+    Import-Module PowerShellGet
+    $RunAsUser = Get-Module -Name RunAsUser -ListAvailable
+    if (-not $RunAsUser) {
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
+        Install-Module RunAsUser -Force
+    }
+    Import-Module RunAsUser -Force
+}
+
 function Get-SeleniumModule {
     <#
         .SYNOPSIS
-        Function to Get SelniumModule
+        Function to Get SeleniumModule
     
         .DESCRIPTION
-        This function will get SelniumModule and install if not installed
+        This function will get SeleniumModule and install if not installed
 
         .EXAMPLE
         Get-SelniumModule
@@ -1218,6 +1272,32 @@ function Get-SeleniumModule {
     if (-not $seleniumModule) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
         Install-Module Selenium -Force
+    }
+    Import-Module Selenium -Force
+}
+
+function Get-SeleniumModule4 {
+    <#
+        .SYNOPSIS
+        Function to Get SeleniumModule4
+    
+        .DESCRIPTION
+        This function will get SeleniumModule4 and install if not installed
+
+        .EXAMPLE
+        Get-SelniumModule
+    
+    #>
+    try {
+        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    }catch{
+        
+    }
+    Import-Module PowerShellGet
+    $seleniumModule = Get-Module -Name Selenium -ListAvailable
+    if (-not $seleniumModule) {
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
+        Install-Module -Name Selenium -AllowPrerelease
     }
     Import-Module Selenium -Force
 }
@@ -1251,41 +1331,358 @@ function Get-WarrantyRegistry {
 function Get-WebDriver {
     <#
         .SYNOPSIS
-        Function to Get Chrome Web Driver
+        Function to Get required WebDriver
     
         .DESCRIPTION
-        This function will get Chrome Web Driver
+        This function will get Web Driver specified
     
         .EXAMPLE
-        Get-WebDriver
+        Get-WebDriver -WebDriver "Chrome"
+        Get-WebDriver -WebDriver "Edge"
+
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Chrome', 'Edge')]
+        [String]$WebDriver = "Chrome",
+
+        $registryRoot        = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths",             # root location in registry to check version of currently installed apps
+        $edgeRegistryPath    = "$registryRoot\msedge.exe",                                              # direct registry location for MS Edge (to check version)
+        $chromeRegistryPath  = "$registryRoot\chrome.exe",                                              # direct registry location for Chrome (to check version)
+        $webDriversPath      = "C:\temp\EasyWarrantyCheck\WebDrivers",                                  # local path for all web drivers (assuming that both are in the same location)
+        $edgeDriverPath      = "$($webDriversPath)\msedgedriver.exe",                                   # direct MS Edge driver path
+        $chromeDriverPath    = "$($webDriversPath)\chromedriver.exe",                                   # direct Chrome driver path
+        $chromeDriverWebsite = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json",                           # Chrome dooesn't allow to query the version from downloads page; instead available pages can be found here
+        $edgeDriverWebsite   = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"  # URL to find and download relevant MS Edge Driver version
+    )
+
+    function Get-LocalDriverVersion{
+        param(
+            $pathToDriver                                               # direct path to the driver
+        )
+        $processInfo = New-Object System.Diagnostics.ProcessStartInfo   # need to pass the switch & catch the output, hence ProcessStartInfo is used
+    
+        $processInfo.FileName               = $pathToDriver
+        $processInfo.RedirectStandardOutput = $true                     # need to catch the output - the version
+        $processInfo.Arguments              = "-v"
+        $processInfo.UseShellExecute        = $false                    # hide execution
+    
+        $process = New-Object System.Diagnostics.Process
+    
+        $process.StartInfo  = $processInfo
+        try {
+            $process.Start()    | Out-Null
+            $process.WaitForExit()                                      # run synchronously, we need to wait for result
+            $processStOutput    = $process.StandardOutput.ReadToEnd()
+        }catch{
+            $version = "1.0.0.0"
+        }                             
+    
+        if ($version -eq "1.0.0.0") {
+            return $version
+        }
+        elseif ($pathToDriver.Contains("msedgedriver")) {
+            return ($processStOutput -split " ")[3]                     # MS Edge returns version on 4th place in the output (be careful, in old versions it was on 1st as well)... 
+        }
+        else {
+            return ($processStOutput -split " ")[1]                     # ... while Chrome on 2nd place
+        }        
+    }
+    
+    function Confirm-NeedForUpdate{
+        param(
+            $v1,                                                                                 # version 1 to compare
+            $v2                                                                                  # version 2 to compare
+        )
+        return $v1.Substring(0, $v1.LastIndexOf(".")) -ne $v2.Substring(0, $v2.LastIndexOf(".")) # return true if update is needed, otherwise false. Ignore last minor version - it's not so important and can be skipped
+    }
+    # Create WebDrivers Location if not exist
+    try {
+        if (-not (Test-Path -Path $webDriversPath -PathType Container)) {
+            # Directory doesn't exist, create it
+            New-Item -Path $webDriversPath -ItemType Directory -Force | Out-Null
+            Write-Verbose "Directory created successfully."
+        } else {
+            Write-Verbose "Directory already exists."
+        }
+    } catch {
+        Write-Host "An error occurred: $_"
+    }
+
+    if($WebDriver -eq "Chrome"){
+        # Check which browser versions are installed (from registry)
+        try {
+            $chromeVersion = (Get-Item (Get-ItemProperty $chromeRegistryPath).'(Default)').VersionInfo.ProductVersion
+        } catch {
+
+        }
+        # check which driver versions are installed
+        $chromeDriverVersion = Get-LocalDriverVersion -pathToDriver $chromeDriverPath
+        if (Confirm-NeedForUpdate $chromeVersion $chromeDriverVersion){
+        $jsonString = Invoke-RestMethod -Uri $chromeDriverWebsite
+        # Find the URL for chromedriver for win64 platform in the stable channel
+        $webdriverurl = $jsonString.channels.Stable.downloads.chromedriver | Where-Object { $_.platform -eq "win64" } | Select-Object -ExpandProperty url
+        $chromeDriverAvailableVersions = $webdriverurl
+        $versionLink = $chromeDriverAvailableVersions | where {$_ -like "*$chromeVersion/*"}
+        if (!$versionLink){
+            $browserMajorVersion = $chromeVersion.Substring(0, $chromeVersion.IndexOf("."))
+            $versionLink         = $chromeDriverAvailableVersions | where {$_ -like "*$browserMajorVersion.*"}
+        }
+            # in case of multiple links, take the first only
+        if ($versionLink.Count -gt 1){
+            $versionLink = $versionLink[0]
+        }
+        $downloadLink = $versionLink
+        try {
+            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
+        }catch{
+
+        }
+        # Expand archive and replace the old file
+        Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
+        Move-Item      "$webDriversPath\tempchrome\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
+
+        # clean-up
+        Remove-Item "$webDriversPath\chromeNewDriver.zip" -Force | Out-Null
+        Remove-Item "$webDriversPath\tempchrome" -Recurse -Force | Out-Null
+    }
+    } 
+    if($WebDriver -eq "Edge"){
+        # Check which browser versions are installed (from registry)
+        try {
+            $edgeVersion   = (Get-Item (Get-ItemProperty $edgeRegistryPath).'(Default)').VersionInfo.ProductVersion
+        } catch {
+
+        }
+        # check which driver versions are installed
+        $edgeDriverVersion   = Get-LocalDriverVersion -pathToDriver $edgeDriverPath
+        if($edgeDriverVersion -eq $null){
+            # Set version to nothing
+            $edgeDriverVersion = "1.0.0.0"
+        }
+        if (Confirm-NeedForUpdate $edgeVersion $edgeDriverVersion){
+            # find exact matching version
+            $edgeDriverAvailableVersions = (Invoke-RestMethod $edgeDriverWebsite) -split " " | where {$_ -like "*href=*win64*"} | % {$_.replace("href=","").replace('"','')}
+            $downloadLink                = $edgeDriverAvailableVersions | where {$_ -like "*/$edgeVersion/*"}
+        
+            # if cannot find (e.g. it's too new to have a web driver), look for relevant major version
+            if (!$downloadLink){
+                $browserMajorVersion = $edgeVersion.Substring(0, $edgeVersion.IndexOf("."))
+                $downloadLink        = $edgeDriverAvailableVersions | where {$_ -like "*/$browserMajorVersion*"}
+            }
+        
+            # in case of multiple links, take the first only
+            if ($downloadLink.Count -gt 1) {
+                $downloadLink = $downloadLink[0]
+            }
+        
+            # download the file
+            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
+        
+            # epand archive and replace the old file
+            Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force
+            Move-Item      "$webDriversPath\tempedge\msedgedriver.exe" -Destination "$($webDriversPath)\msedgedriver.exe" -Force
+        
+            # clean-up
+            Remove-Item "$webDriversPath\edgeNewDriver.zip" -Force | Out-Null
+            Remove-Item "$webDriversPath\tempedge" -Recurse -Force | Out-Null
+        }                           
+    } 
+    }
+
+function Start-SeleniumModule {
+    <#
+        .SYNOPSIS
+        Function to Start Selenium Module
+    
+        .DESCRIPTION
+        This function will Start Selenium Module
+    
+        .EXAMPLE
+        Start-SeleniumModule -Driver "Chrome"
+        Start-SeleniumModule -Driver "Edge"
+
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Chrome', 'Edge')]
+        [String]$WebDriver = "Chrome",
+
+        [Parameter(Mandatory = $false)]
+        [bool]$Headless = $true,
+
+        [Parameter(Mandatory = $false)]
+        [String]$WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
+    )
+    if($WebDriver  -eq "Edge"){
+        Get-RunAsUserModule
+        Import-Module -Name RunAsUser
+        $scriptblock = {
+            Import-Module Selenium
+            $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
+            $EdgeService = [OpenQA.Selenium.Edge.EdgeDriverService]::CreateDefaultService($WebDriverPath, 'msedgedriver.exe')
+            $EdgeService.HideCommandPromptWindow = $true
+            $EdgeService.UseVerboseLogging = $true
+            $edgeOptions = [OpenQA.Selenium.Edge.EdgeOptions]::new()
+            $edgeOptions = New-Object OpenQA.Selenium.Edge.EdgeOptions
+            # Specify the debugging port
+            $debugPort = "9222"
+            $edgeOptions.AddAdditionalCapability("ms:edgeOptions", @{args = @(
+                    "--inprivate"
+                    "--no-sandbox"
+                    "--headless"
+                    "--remote-debugging-port=$debugPort"
+                ) })
+            $driver = New-Object OpenQA.Selenium.Edge.EdgeDriver($EdgeService, $edgeOptions)
+            Start-Sleep -Seconds 3
+        }
+        $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
+        $process =  "msedgedriver.exe"
+        $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
+        # Regular expression pattern to match port number
+        $portPattern = '--port=(\d+)'
+        if ($commandLine -match $portPattern) {
+            $driverportnumber = $matches[1]
+        } else {
+            Write-Output "Port number not found."
+        }
+        $debugPort = "9222"
+        # Connect to Edge WebDriver under user context
+        # Set the address of the remote WebDriver
+        $remoteAddress = "http://127.0.0.1:$driverportnumber"
+        $options = New-Object OpenQA.Selenium.Edge.EdgeOptions
+        # Set the debugger address
+        $debuggerAddress = "127.0.0.1:$debugPort"
+        $options.AddAdditionalCapability("ms:edgeOptions", @{
+            "debuggerAddress" = $debuggerAddress
+        })
+        # Connect to the existing Edge session
+        return $driver = New-Object OpenQA.Selenium.Remote.RemoteWebDriver($remoteAddress, $options)
+    } 
+    if($WebDriver -eq "Chrome"){
+        $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
+        $ChromeService.HideCommandPromptWindow = $true
+        $chromeOptions = [OpenQA.Selenium.Chrome.ChromeOptions]::new()
+        if($Headless -eq $true){
+            $chromeOptions.AddArgument("headless")
+        }
+        $chromeOptions.AddArgument("--log-level=3")
+        return $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
+    } 
+    }
+
+function Stop-SeleniumModule {
+    <#
+        .SYNOPSIS
+        Function to Stop Selenium Module
+    
+        .DESCRIPTION
+        This function will Stop Selenium Module
+    
+        .EXAMPLE
+        Stop-SeleniumModule -WebDriver "Chrome"
+        Stop-SeleniumModule -WebDriver "Edge"
+
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Chrome', 'Edge')]
+        [String]$WebDriver = "Chrome",
+
+        [Parameter(Mandatory = $false)]
+        [bool]$Headless = $true,
+
+        [Parameter(Mandatory = $false)]
+        [String]$WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
+    )
+    if($WebDriver  -eq "Edge"){
+        # Get the processes of Microsoft Edge
+        $edgeProcesses = Get-CimInstance Win32_Process -Filter "name = 'msedge.exe'"
+
+        # Filter processes with --headless
+        $headlessEdgeProcesses = $edgeProcesses | Where-Object { $_.CommandLine -match '--headless' }
+
+        # Terminate each edge process
+        foreach ($process in $headlessEdgeProcesses) {
+            $processID = $process.ProcessId
+            if ($processID -ne $null) {
+                Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
+            } else {
+            }
+        }
+
+        # Get the processes of msedgedriver
+        $driverProcesses = Get-CimInstance Win32_Process -Filter "name = 'msedgedriver.exe'"
+
+        # Terminate each driver process
+        foreach ($process in $driverProcesses) {
+            $processID = $process.ProcessId
+            if ($processID -ne $null) {
+                Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
+            } else {
+
+            }
+        }
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null 
+    } 
+    if($WebDriver -eq "Chrome"){
+        $driver.quit()
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null
+    }
+}
+
+function Test-SoftwareInstalled {
+    <#
+        .SYNOPSIS
+        Function to check software exists
+    
+        .DESCRIPTION
+        This function will check if software exists
+    
+        .EXAMPLE
+        Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
     
     #>
-    # Retrieve JSON content from the URL
-    $jsonUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
-    $jsonString = Invoke-RestMethod -Uri $jsonUrl
-    # Find the URL for chromedriver for win64 platform in the stable channel
-    $webdriverurl = $jsonString.channels.Stable.downloads.chromedriver | Where-Object { $_.platform -eq "win64" } | Select-Object -ExpandProperty url
-    $WebDrivertemp = "C:\temp"
-    $WebDriverPath = "C:\temp\chromedriver-win64"
-    $driverExists = Test-Path (Join-Path $WebDriverPath "chromedriver.exe")
-    if (-not $driverExists) {
-        try {
-            mkdir C:\Temp -Force | Out-Null
-            $tempFile = [System.IO.Path]::GetTempFileName() + ".zip"
-            $wc = New-Object System.Net.WebClient
-            $wc.DownloadFile($webdriverurl, $tempFile)
+    param(
+        [string]$SoftwareName
+    )
 
-            # Extract the zip file
-            Expand-Archive -Path $tempFile -DestinationPath $WebDrivertemp -Force
+# Define the registry paths where the software information is stored for 32-bit and 64-bit
+$registryPaths = @(
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+    "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+)
 
-            # Clean up: Remove temporary file
-            # Remove-Item $tempFile
-        } catch {
-            Write-Host "An error occurred: $_.Exception.Message"
+# Check if the software registry key exists in either 32-bit or 64-bit location
+foreach ($path in $registryPaths) {
+    $installed = Get-ItemProperty -Path $path | Where-Object { $_.DisplayName -eq $SoftwareName }
+    if ($installed) {
+        $version = $installed.DisplayVersion
+        Write-Verbose "$SoftwareName version $version is installed."
+        $result = [PSCustomObject]@{
+            Software = $SoftwareName 
+            Installed = $true
+            Version = $version
         }
-    } else {
+        return $result
     }
-    }
+}
+# If the software was not found in any location
+Write-Host "###########################"
+Write-Host "WARNING"
+Write-Host "$SoftwareName not detected"
+Write-Host "This manufacturer currently requires $SoftwareName installed to check expiry"
+Write-Host "###########################"
+Write-Verbose "$SoftwareName is not installed."
+$result = [PSCustomObject]@{
+    Software = $SoftwareName 
+    Installed = $false
+    Version = $null
+}
+return $result
+}
+
 
 function Write-WarrantyRegistry{
     <#
