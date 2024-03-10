@@ -679,8 +679,8 @@ function Get-WarrantyHP {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
             Write-Host "###########################"
             Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
             Write-Host "###########################"
             Write-Host "Estimating Details from Registry"
             try {
@@ -1434,17 +1434,17 @@ function Get-WebDriver {
         }
         $downloadLink = $versionLink
         try {
-            Invoke-WebRequest $downloadLink -OutFile "chromeNewDriver.zip"
+            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
 
         }
         # Expand archive and replace the old file
-        Expand-Archive "chromeNewDriver.zip"              -DestinationPath "chromeNewDriver\"                    -Force
-        Move-Item      "chromeNewDriver/chromedriver-win64/chromedriver.exe" -Destination     "$($webDriversPath)\chromedriver.exe" -Force
+        Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
+        Move-Item      "$webDriversPath\tempchrome\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
 
         # clean-up
-        Remove-Item "chromeNewDriver.zip" -Force
-        Remove-Item "chromeNewDriver" -Recurse -Force
+        Remove-Item "$webDriversPath\chromeNewDriver.zip" -Force | Out-Null
+        Remove-Item "$webDriversPath\tempchrome" -Recurse -Force | Out-Null
     }
     } 
     if($WebDriver -eq "Edge"){
@@ -1477,93 +1477,17 @@ function Get-WebDriver {
             }
         
             # download the file
-            Invoke-WebRequest $downloadLink -OutFile "edgeNewDriver.zip"
+            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
         
             # epand archive and replace the old file
-            Expand-Archive "edgeNewDriver.zip"              -DestinationPath "edgeNewDriver\"                      -Force
-            Move-Item      "edgeNewDriver/msedgedriver.exe" -Destination     "$($webDriversPath)\msedgedriver.exe" -Force
+            Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force
+            Move-Item      "$webDriversPath\tempedge\msedgedriver.exe" -Destination "$($webDriversPath)\msedgedriver.exe" -Force
         
             # clean-up
-            Remove-Item "edgeNewDriver.zip" -Force
-            Remove-Item "edgeNewDriver"     -Recurse -Force
+            Remove-Item "$webDriversPath\edgeNewDriver.zip" -Force | Out-Null
+            Remove-Item "$webDriversPath\tempedge" -Recurse -Force | Out-Null
         }                           
     } 
-    }
-
-function Get-WebDriverChrome {
-    <#
-        .SYNOPSIS
-        Function to Get Chrome Web Driver
-    
-        .DESCRIPTION
-        This function will get Chrome Web Driver
-    
-        .EXAMPLE
-        Get-WebDriver
-    
-    #>
-    # Retrieve JSON content from the URL
-    $jsonUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
-    $jsonString = Invoke-RestMethod -Uri $jsonUrl
-    # Find the URL for chromedriver for win64 platform in the stable channel
-    $webdriverurl = $jsonString.channels.Stable.downloads.chromedriver | Where-Object { $_.platform -eq "win64" } | Select-Object -ExpandProperty url
-    $WebDrivertemp = "C:\temp"
-    $WebDriverPath = "C:\temp\chromedriver-win64"
-    $driverExists = Test-Path (Join-Path $WebDriverPath "chromedriver.exe")
-    if (-not $driverExists) {
-        try {
-            mkdir C:\Temp -Force | Out-Null
-            $tempFile = [System.IO.Path]::GetTempFileName() + ".zip"
-            $wc = New-Object System.Net.WebClient
-            $wc.DownloadFile($webdriverurl, $tempFile)
-
-            # Extract the zip file
-            Expand-Archive -Path $tempFile -DestinationPath $WebDrivertemp -Force
-
-            # Clean up: Remove temporary file
-            # Remove-Item $tempFile
-        } catch {
-            Write-Host "An error occurred: $_.Exception.Message"
-        }
-    } else {
-    }
-    }
-
-function Get-WebDriverEdge {
-    <#
-        .SYNOPSIS
-        Function to Get Edge Web Driver
-    
-        .DESCRIPTION
-        This function will get Edge Web Driver
-    
-        .EXAMPLE
-        Get-WebDriverEdge
-    
-    #>
-    # https://itconstructors.com/automate-update-of-selenium-web-driver-powershell/
-    $webdriverurl = "https://msedgedriver.azureedge.net/122.0.2365.66/edgedriver_win64.zip"
-    $WebDrivertemp = "C:\temp"
-    $WebDriverPath = "C:\temp\edgedriver-win64"
-    $driverExists = Test-Path (Join-Path $WebDriverPath "msedgedriver.exe")
-    if (-not $driverExists) {
-        try {
-            mkdir C:\Temp -Force | Out-Null
-            mkdir $WebDriverPath -Force | Out-Null
-            $tempFile = [System.IO.Path]::GetTempFileName() + ".zip"
-            $wc = New-Object System.Net.WebClient
-            $wc.DownloadFile($webdriverurl, $tempFile)
-
-            # Extract the zip file
-            Expand-Archive -Path $tempFile -DestinationPath $WebDriverPath -Force
-
-            # Clean up: Remove temporary file
-            # Remove-Item $tempFile
-        } catch {
-            Write-Host "An error occurred: $_.Exception.Message"
-        }
-    } else {
-    }
     }
 
 function Start-SeleniumModule {
@@ -1612,7 +1536,7 @@ function Start-SeleniumModule {
             $driver = New-Object OpenQA.Selenium.Edge.EdgeDriver($EdgeService, $edgeOptions)
             Start-Sleep -Seconds 3
         }
-        $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -CaptureOutput
+        $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
         # Regular expression pattern to match port number
