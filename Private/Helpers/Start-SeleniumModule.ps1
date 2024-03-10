@@ -44,7 +44,7 @@ function Start-SeleniumModule {
             $driver = New-Object OpenQA.Selenium.Edge.EdgeDriver($EdgeService, $edgeOptions)
             Start-Sleep -Seconds 3
         }
-        $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -CaptureOutput
+        $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
         # Regular expression pattern to match port number

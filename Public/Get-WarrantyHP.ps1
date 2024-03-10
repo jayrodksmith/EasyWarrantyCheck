@@ -41,8 +41,8 @@ function Get-WarrantyHP {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
             Write-Host "###########################"
             Write-Host "WARNING"
-            Write-Host "Google Chrome not detected"
-            Write-Host "This manufacturer currently requires Google Chrome installed to check expiry"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
             Write-Host "###########################"
             Write-Host "Estimating Details from Registry"
             try {

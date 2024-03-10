@@ -104,17 +104,17 @@ function Get-WebDriver {
         }
         $downloadLink = $versionLink
         try {
-            Invoke-WebRequest $downloadLink -OutFile "chromeNewDriver.zip"
+            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
 
         }
         # Expand archive and replace the old file
-        Expand-Archive "chromeNewDriver.zip"              -DestinationPath "chromeNewDriver\"                    -Force
-        Move-Item      "chromeNewDriver/chromedriver-win64/chromedriver.exe" -Destination     "$($webDriversPath)\chromedriver.exe" -Force
+        Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
+        Move-Item      "$webDriversPath\tempchrome\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
 
         # clean-up
-        Remove-Item "chromeNewDriver.zip" -Force
-        Remove-Item "chromeNewDriver" -Recurse -Force
+        Remove-Item "$webDriversPath\chromeNewDriver.zip" -Force | Out-Null
+        Remove-Item "$webDriversPath\tempchrome" -Recurse -Force | Out-Null
     }
     } 
     if($WebDriver -eq "Edge"){
@@ -147,15 +147,15 @@ function Get-WebDriver {
             }
         
             # download the file
-            Invoke-WebRequest $downloadLink -OutFile "edgeNewDriver.zip"
+            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
         
             # epand archive and replace the old file
-            Expand-Archive "edgeNewDriver.zip"              -DestinationPath "edgeNewDriver\"                      -Force
-            Move-Item      "edgeNewDriver/msedgedriver.exe" -Destination     "$($webDriversPath)\msedgedriver.exe" -Force
+            Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force
+            Move-Item      "$webDriversPath\tempedge\msedgedriver.exe" -Destination "$($webDriversPath)\msedgedriver.exe" -Force
         
             # clean-up
-            Remove-Item "edgeNewDriver.zip" -Force
-            Remove-Item "edgeNewDriver"     -Recurse -Force
+            Remove-Item "$webDriversPath\edgeNewDriver.zip" -Force | Out-Null
+            Remove-Item "$webDriversPath\tempedge" -Recurse -Force | Out-Null
         }                           
     } 
     }
