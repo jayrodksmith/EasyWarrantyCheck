@@ -321,8 +321,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        $driver.Quit()
-        Remove-Module Selenium
+        Stop-SeleniumModule
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
@@ -459,8 +458,7 @@ function Get-WarrantyDell {
             Write-Host "No matching text found for warranty status"
         }
         # Close the browser
-        $driver.Quit()
-        Remove-Module Selenium
+        Stop-SeleniumModule
 
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
@@ -867,8 +865,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    $driver.Quit()
-    Remove-Module Selenium
+    Stop-SeleniumModule
 
     if ($endDateText) {
         $warfirst = $startDateText
@@ -1227,6 +1224,32 @@ function Convert-EpochToDateTime {
     return $dateTime.ToString($DateFormat)
 }
 
+function Get-RunAsUserModule {
+    <#
+        .SYNOPSIS
+        Function to Get RunAsUser
+    
+        .DESCRIPTION
+        This function will get RunAsUser and install if not installed
+
+        .EXAMPLE
+        Get-RunAsUser
+    
+    #>
+    try {
+        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    }catch{
+        
+    }
+    Import-Module PowerShellGet
+    $RunAsUser = Get-Module -Name RunAsUser -ListAvailable
+    if (-not $RunAsUser) {
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
+        Install-Module RunAsUser -Force
+    }
+    Import-Module RunAsUser -Force
+}
+
 function Get-SeleniumModule {
     <#
         .SYNOPSIS
@@ -1568,21 +1591,49 @@ function Start-SeleniumModule {
         [String]$WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
     )
     if($WebDriver  -eq "Edge"){
-        $EdgeService = [OpenQA.Selenium.Edge.EdgeDriverService]::CreateDefaultService($WebDriverPath, 'msedgedriver.exe')
-        $EdgeService.HideCommandPromptWindow = $true
-        $EdgeService.UseVerboseLogging = $true
-        $edgeOptions = [OpenQA.Selenium.Edge.EdgeOptions]::new()
-        $edgeOptions = New-Object OpenQA.Selenium.Edge.EdgeOptions
-        if($Headless -eq $true){
+        Get-RunAsUserModule
+        Import-Module -Name RunAsUser
+        $scriptblock = {
+            Import-Module Selenium
+            $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
+            $EdgeService = [OpenQA.Selenium.Edge.EdgeDriverService]::CreateDefaultService($WebDriverPath, 'msedgedriver.exe')
+            $EdgeService.HideCommandPromptWindow = $true
+            $EdgeService.UseVerboseLogging = $true
+            $edgeOptions = [OpenQA.Selenium.Edge.EdgeOptions]::new()
+            $edgeOptions = New-Object OpenQA.Selenium.Edge.EdgeOptions
+            # Specify the debugging port
+            $debugPort = "9222"
             $edgeOptions.AddAdditionalCapability("ms:edgeOptions", @{args = @(
-                "--inprivate"
-                "--user-data-dir=C:\\temp\\chrome-dev-profile"
-                "--no-sandbox"
-                "--headless"
+                    "--inprivate"
+                    "--no-sandbox"
+                    "--headless"
+                    "--remote-debugging-port=$debugPort"
                 ) })
+            $driver = New-Object OpenQA.Selenium.Edge.EdgeDriver($EdgeService, $edgeOptions)
+            Start-Sleep -Seconds 3
         }
-        return $driver = New-Object OpenQA.Selenium.Edge.EdgeDriver($EdgeService, $edgeOptions)
-        
+        $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -CaptureOutput
+        $process =  "msedgedriver.exe"
+        $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
+        # Regular expression pattern to match port number
+        $portPattern = '--port=(\d+)'
+        if ($commandLine -match $portPattern) {
+            $driverportnumber = $matches[1]
+        } else {
+            Write-Output "Port number not found."
+        }
+        $debugPort = "9222"
+        # Connect to Edge WebDriver under user context
+        # Set the address of the remote WebDriver
+        $remoteAddress = "http://127.0.0.1:$driverportnumber"
+        $options = New-Object OpenQA.Selenium.Edge.EdgeOptions
+        # Set the debugger address
+        $debuggerAddress = "127.0.0.1:$debugPort"
+        $options.AddAdditionalCapability("ms:edgeOptions", @{
+            "debuggerAddress" = $debuggerAddress
+        })
+        # Connect to the existing Edge session
+        return $driver = New-Object OpenQA.Selenium.Remote.RemoteWebDriver($remoteAddress, $options)
     } 
     if($WebDriver -eq "Chrome"){
         $ChromeService = [OpenQA.Selenium.Chrome.ChromeDriverService]::CreateDefaultService($WebDriverPath, 'chromedriver.exe')
@@ -1595,6 +1646,69 @@ function Start-SeleniumModule {
         return $driver = New-Object OpenQA.Selenium.Chrome.ChromeDriver($ChromeService, $chromeOptions)
     } 
     }
+
+function Stop-SeleniumModule {
+    <#
+        .SYNOPSIS
+        Function to Stop Selenium Module
+    
+        .DESCRIPTION
+        This function will Stop Selenium Module
+    
+        .EXAMPLE
+        Stop-SeleniumModule -Driver "Chrome"
+        Stop-SeleniumModule -Driver "Edge"
+
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Chrome', 'Edge')]
+        [String]$WebDriver = "Chrome",
+
+        [Parameter(Mandatory = $false)]
+        [bool]$Headless = $true,
+
+        [Parameter(Mandatory = $false)]
+        [String]$WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
+    )
+    if($WebDriver  -eq "Edge"){
+        # Get the processes of Microsoft Edge
+        $edgeProcesses = Get-CimInstance Win32_Process -Filter "name = 'msedge.exe'"
+
+        # Filter processes with --headless
+        $headlessEdgeProcesses = $edgeProcesses | Where-Object { $_.CommandLine -match '--headless' }
+
+        # Terminate each edge process
+        foreach ($process in $headlessEdgeProcesses) {
+            $processID = $process.ProcessId
+            if ($processID -ne $null) {
+                Stop-Process -Id $processID -Force
+                Write-Host "Terminated headless Microsoft Edge process with ID $processID"
+            } else {
+                Write-Host "Failed to retrieve process ID for a headless Microsoft Edge process."
+            }
+        }
+
+        # Get the processes of msedgedriver
+        $driverProcesses = Get-CimInstance Win32_Process -Filter "name = 'msedgedriver.exe'"
+
+        # Terminate each driver process
+        foreach ($process in $driverProcesses) {
+            $processID = $process.ProcessId
+            if ($processID -ne $null) {
+                Stop-Process -Id $processID -Force
+                Write-Host "Terminated msedgedriver process with ID $processID"
+            } else {
+                Write-Host "Failed to retrieve process ID for a msedgedriver process."
+            }
+        }
+        Remove-Module Selenium
+    } 
+    if($WebDriver -eq "Chrome"){
+        $driver.quit()
+        Remove-Module Selenium
+    }
+}
 
 function Test-SoftwareInstalled {
     <#
