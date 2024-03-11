@@ -26,7 +26,7 @@ foreach ($path in $registryPaths) {
     $installed = Get-ItemProperty -Path $path | Where-Object { $_.DisplayName -eq $SoftwareName }
     if ($installed) {
         $version = $installed.DisplayVersion
-        Write-Debug "$SoftwareName version $version is installed."
+        Write-Verbose "$SoftwareName version $version is installed."
         $result = [PSCustomObject]@{
             Software = $SoftwareName 
             Installed = $true
@@ -41,7 +41,7 @@ Write-Host "WARNING"
 Write-Host "$SoftwareName not detected"
 Write-Host "This manufacturer currently requires $SoftwareName installed to check expiry"
 Write-Host "###########################"
-Write-Debug "$SoftwareName is not installed."
+Write-Verbose "$SoftwareName is not installed."
 $result = [PSCustomObject]@{
     Software = $SoftwareName 
     Installed = $false

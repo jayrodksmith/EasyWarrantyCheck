@@ -15,11 +15,11 @@ function Get-SeleniumModule {
     }catch{
         
     }
-    Import-Module PowerShellGet
+    Import-Module PowerShellGet -Verbose:$false
     $seleniumModule = Get-Module -Name Selenium -ListAvailable | Where-Object { $_.Version -eq '3.0.1' }
     if (-not $seleniumModule) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module Selenium -Force -RequiredVersion '3.0.1'
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
+        Install-Module Selenium -Force -RequiredVersion '3.0.1' -Verbose:$false
     }
-    Import-Module Selenium -Force -Version '3.0.1'
+    Import-Module Selenium -Force -Version '3.0.1' -Verbose:$false
 }

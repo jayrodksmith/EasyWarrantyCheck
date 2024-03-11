@@ -47,14 +47,14 @@ function Get-WarrantyAsus {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-            Remove-Module Selenium
+            Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Start a new browser session with headless mode
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -65,7 +65,7 @@ function Get-WarrantyAsus {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-            Remove-Module Selenium
+            Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Navigate to the warranty check URL
@@ -80,7 +80,7 @@ function Get-WarrantyAsus {
             $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
             $submitcheckcookiesButton.Click()
         } catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
         }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()

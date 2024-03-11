@@ -39,7 +39,7 @@ function Get-WarrantyHP {
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
             Write-Host "###########################"
             Write-Host "WARNING"
             Write-Host "$($browserinstalled.software) not detected"
@@ -63,7 +63,7 @@ function Get-WarrantyHP {
                     'Product Image'         = $null
                     'Warranty URL'          = $null
                 }
-                Remove-Module Selenium
+                Remove-Module Selenium -Verbose:$false
                 return $warObj
             }
             catch {
@@ -78,7 +78,7 @@ function Get-WarrantyHP {
                     'Product Image'         = $null
                     'Warranty URL'          = $null
                 }
-                Remove-Module Selenium
+                Remove-Module Selenium -Verbose:$false
                 return $warObj
             }
         }
@@ -104,13 +104,13 @@ function Get-WarrantyHP {
         $errorMsgElement = $driver.FindElementByClassName("errorTxt")
     }
     catch {
-        Write-Debug "No Product Model required"
+        Write-Verbose "No Product Model required"
     }
 
     if ($null -ne $errorMsgElement -and $null -ne $SystemSKU) {
         # Error message found
         Write-Host "Using SystemSKU input"
-        Write-Debug "Need Product ID"
+        Write-Verbose "Need Product ID"
         $productField = $driver.FindElementById("product-number inputtextPN")
         $productField.SendKeys($SystemSKU)
         $submitButton = $driver.FindElementById("FindMyProductNumber")
@@ -124,7 +124,7 @@ function Get-WarrantyHP {
     elseif ($null -ne $errorMsgElement -and $global:ServerMode -ne $true) {
         # Error message found
         Write-Host "Searching for additional SystemSKU......."
-        Write-Debug "Need Product ID"
+        Write-Verbose "Need Product ID"
         # Define the registry path
         $regPath = "HKLM:\HARDWARE\DESCRIPTION\System\BIOS"
         # Get the value of "SystemSKU" if it exists

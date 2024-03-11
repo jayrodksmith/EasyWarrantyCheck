@@ -36,9 +36,9 @@ function Write-WarrantyRegistry{
                 if (-not (Test-Path $RegistryPath)) {
                     # Create the registry key if it doesn't exist
                     New-Item -Path $RegistryPath -Force -ErrorAction SilentlyContinue | Out-Null
-                    Write-Debug "Registry key created successfully."
+                    Write-Verbose "Registry key created successfully."
                 } else {
-                    Write-Debug "Registry key already exists."
+                    Write-Verbose "Registry key already exists."
                 }
                 if($Warrantystart){
                     New-ItemProperty -Path $RegistryPath -Name "WarrantyStart" -PropertyType String -Value $Warrantystart -Force -ErrorAction SilentlyContinue | Out-Null

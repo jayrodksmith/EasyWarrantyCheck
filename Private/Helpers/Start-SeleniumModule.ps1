@@ -24,7 +24,7 @@ function Start-SeleniumModule {
     )
     if($WebDriver  -eq "Edge"){
         Get-RunAsUserModule
-        Import-Module -Name RunAsUser
+        Import-Module -Name RunAsUser -Verbose:$false
         $scriptblock = {
             Import-Module Selenium
             $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
@@ -46,15 +46,15 @@ function Start-SeleniumModule {
             return $driver
         }
         $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
-        Write-Debug "Driver Invoked : $invokeasuser"
+        Write-Verbose "Driver Invoked : $invokeasuser"
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
-        Write-Debug "msedgedriver.exe process : $commandLine"
+        Write-Verbose "msedgedriver.exe process : $commandLine"
         # Regular expression pattern to match port number
         $portPattern = '--port=(\d+)'
         if ($commandLine -match $portPattern) {
             $driverportnumber = $matches[1]
-            Write-Debug "Driver Port Number : $driverportnumber"
+            Write-Verbose "Driver Port Number : $driverportnumber"
         } else {
             Write-Output "Port number not found."
         }
