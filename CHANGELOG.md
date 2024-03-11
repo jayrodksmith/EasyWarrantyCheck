@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+# [1.0.1] - 11-03-2024
+
+### Added
+
+- Minor Verbose logging
+
+### Changed
+
+- Modules now check for specific version
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
 # [1.0.0] - 10-03-2024
 
 ### Added
