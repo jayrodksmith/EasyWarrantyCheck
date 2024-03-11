@@ -110,7 +110,7 @@ function Get-WebDriver {
         }
         # Expand archive and replace the old file
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
-        Move-Item      "$webDriversPath\tempchrome\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
+        Move-Item      "$webDriversPath\tempchrome\chromedriver-win64\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
 
         # clean-up
         Remove-Item "$webDriversPath\chromeNewDriver.zip" -Force | Out-Null
