@@ -26,6 +26,7 @@ function Get-Warranty {
         
         # Web Driver mode, Edge or Chrome ( Edge Beta Support )
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [ValidateSet('Chrome', 'Edge')]
         [String]$Seleniumdrivermode = 'Chrome',
 
@@ -46,6 +47,7 @@ function Get-Warranty {
         [bool]$ForceUpdate = $false,
     
         # Custom Machine Details, available in both sets
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [String]$Serial = 'Automatic',
     
@@ -1638,11 +1640,11 @@ function Stop-SeleniumModule {
 
             }
         }
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null 
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null 
     } 
     if($WebDriver -eq "Chrome"){
         $driver.quit()
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null
     }
 }
 
