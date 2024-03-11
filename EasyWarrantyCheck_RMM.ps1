@@ -409,7 +409,7 @@ function Get-WarrantyDell {
         }
         # Start a new browser session with headless mode
         try{
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $false
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -458,8 +458,25 @@ function Get-WarrantyDell {
                 $warEndDate = $FormattedDate
                 $warrantystatus = "In Warranty"
             }
+            # Try for Start Date
+            try {
+                $checkDeviceDetails = $driver.FindElementByClassName("dds__button--secondary")
+                $checkDeviceDetails.Click()
+                Start-Sleep -Seconds 10
+                $ManageServicesButton = $driver.FindElementByClassName("viewDetailsWarranty")
+                $ManageServicesButton.Click()
+                Start-Sleep -Seconds 10
+                $PurchaseDateElement = $driver.FindElementById("dsk-purchaseDt")
+                $PurchaseDate = $PurchaseDateElement.Text
+                $WarrantystartDate = [datetime]::ParseExact($PurchaseDate, "dd MMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+                $warStartDate = $WarrantystartDate.ToString($dateformat)
+            } catch {
+                Write-Host "The purchase date field could not be found."
+                $warStartDate = $null
+            }
+            
         } else {
-            Write-Host "No matching text found for warranty status"
+            Write-Host "No matching text found for warranty end date "
         }
         # Close the browser
         Stop-SeleniumModule -WebDriver $Seleniumdrivermode
@@ -468,7 +485,7 @@ function Get-WarrantyDell {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
+                'StartDate' = $warStartDate
                 'EndDate' = $warEndDate
                 'Warranty Status' = $warrantystatus
                 'Client' = $null
