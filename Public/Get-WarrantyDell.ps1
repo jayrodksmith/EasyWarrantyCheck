@@ -54,7 +54,7 @@ function Get-WarrantyDell {
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null

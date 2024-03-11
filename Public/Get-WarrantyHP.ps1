@@ -39,7 +39,7 @@ function Get-WarrantyHP {
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
             Write-Host "###########################"
             Write-Host "WARNING"
             Write-Host "$($browserinstalled.software) not detected"

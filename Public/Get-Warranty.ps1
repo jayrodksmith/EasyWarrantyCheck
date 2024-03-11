@@ -36,7 +36,7 @@ function Get-Warranty {
         # Enable Registry Storing
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [bool]$EnableRegistry = $true,
-    
+
         # Registry Path
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [String]$RegistryPath = 'HKLM:\SOFTWARE\RMMCustomInfo\',

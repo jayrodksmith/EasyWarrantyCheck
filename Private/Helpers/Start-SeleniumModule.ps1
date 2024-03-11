@@ -46,15 +46,15 @@ function Start-SeleniumModule {
             return $driver
         }
         $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
-        Write-Verbose "Driver Invoked : $invokeasuser"
+        Write-Debug "Driver Invoked : $invokeasuser"
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
-        Write-Verbose "msedgedriver.exe process : $commandLine"
+        Write-Debug "msedgedriver.exe process : $commandLine"
         # Regular expression pattern to match port number
         $portPattern = '--port=(\d+)'
         if ($commandLine -match $portPattern) {
             $driverportnumber = $matches[1]
-            Write-Verbose "Driver Port Number : $driverportnumber"
+            Write-Debug "Driver Port Number : $driverportnumber"
         } else {
             Write-Output "Port number not found."
         }

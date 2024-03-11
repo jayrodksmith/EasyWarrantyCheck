@@ -71,9 +71,9 @@ function Get-WebDriver {
         if (-not (Test-Path -Path $webDriversPath -PathType Container)) {
             # Directory doesn't exist, create it
             New-Item -Path $webDriversPath -ItemType Directory -Force | Out-Null
-            Write-Verbose "Directory created successfully."
+            Write-Debug "Directory created successfully."
         } else {
-            Write-Verbose "Directory already exists."
+            Write-Debug "Directory already exists."
         }
     } catch {
         Write-Host "An error occurred: $_"
@@ -106,7 +106,7 @@ function Get-WebDriver {
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         # Expand archive and replace the old file
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
@@ -122,7 +122,7 @@ function Get-WebDriver {
         try {
             $edgeVersion   = (Get-Item (Get-ItemProperty $edgeRegistryPath).'(Default)').VersionInfo.ProductVersion
         } catch {
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         # check which driver versions are installed
         $edgeDriverVersion   = Get-LocalDriverVersion -pathToDriver $edgeDriverPath
@@ -150,7 +150,7 @@ function Get-WebDriver {
             try {
                 Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
             } catch{
-                Write-Verbose $_.Exception.Message
+                Write-Debug $_.Exception.Message
             }
         
             # epand archive and replace the old file

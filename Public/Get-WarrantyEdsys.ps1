@@ -38,7 +38,7 @@ function Get-WarrantyEdsys {
         try {
             $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         if($response){
         # Output the response

@@ -54,7 +54,7 @@ function Get-WarrantyAsus {
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -80,7 +80,7 @@ function Get-WarrantyAsus {
             $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
             $submitcheckcookiesButton.Click()
         } catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
