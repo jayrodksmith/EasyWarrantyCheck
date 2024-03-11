@@ -52,7 +52,7 @@ function Get-WarrantyDell {
         }
         # Start a new browser session with headless mode
         try{
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $false
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
