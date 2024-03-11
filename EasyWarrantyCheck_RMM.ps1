@@ -36,7 +36,7 @@ function Get-Warranty {
         # Enable Registry Storing
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [bool]$EnableRegistry = $true,
-    
+
         # Registry Path
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [String]$RegistryPath = 'HKLM:\SOFTWARE\RMMCustomInfo\',
@@ -259,7 +259,7 @@ function Get-WarrantyAsus {
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -285,7 +285,7 @@ function Get-WarrantyAsus {
             $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
             $submitcheckcookiesButton.Click()
         } catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
@@ -409,7 +409,7 @@ function Get-WarrantyDell {
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -528,7 +528,7 @@ function Get-WarrantyEdsys {
         try {
             $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         if($response){
         # Output the response
@@ -679,7 +679,7 @@ function Get-WarrantyHP {
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
             Write-Host "###########################"
             Write-Host "WARNING"
             Write-Host "$($browserinstalled.software) not detected"
@@ -1405,9 +1405,9 @@ function Get-WebDriver {
         if (-not (Test-Path -Path $webDriversPath -PathType Container)) {
             # Directory doesn't exist, create it
             New-Item -Path $webDriversPath -ItemType Directory -Force | Out-Null
-            Write-Verbose "Directory created successfully."
+            Write-Debug "Directory created successfully."
         } else {
-            Write-Verbose "Directory already exists."
+            Write-Debug "Directory already exists."
         }
     } catch {
         Write-Host "An error occurred: $_"
@@ -1440,7 +1440,7 @@ function Get-WebDriver {
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         # Expand archive and replace the old file
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
@@ -1456,7 +1456,7 @@ function Get-WebDriver {
         try {
             $edgeVersion   = (Get-Item (Get-ItemProperty $edgeRegistryPath).'(Default)').VersionInfo.ProductVersion
         } catch {
-            Write-Verbose $_.Exception.Message
+            Write-Debug $_.Exception.Message
         }
         # check which driver versions are installed
         $edgeDriverVersion   = Get-LocalDriverVersion -pathToDriver $edgeDriverPath
@@ -1484,7 +1484,7 @@ function Get-WebDriver {
             try {
                 Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
             } catch{
-                Write-Verbose $_.Exception.Message
+                Write-Debug $_.Exception.Message
             }
         
             # epand archive and replace the old file
@@ -1546,15 +1546,15 @@ function Start-SeleniumModule {
             return $driver
         }
         $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
-        Write-Verbose "Driver Invoked : $invokeasuser"
+        Write-Debug "Driver Invoked : $invokeasuser"
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
-        Write-Verbose "msedgedriver.exe process : $commandLine"
+        Write-Debug "msedgedriver.exe process : $commandLine"
         # Regular expression pattern to match port number
         $portPattern = '--port=(\d+)'
         if ($commandLine -match $portPattern) {
             $driverportnumber = $matches[1]
-            Write-Verbose "Driver Port Number : $driverportnumber"
+            Write-Debug "Driver Port Number : $driverportnumber"
         } else {
             Write-Output "Port number not found."
         }
@@ -1674,7 +1674,7 @@ foreach ($path in $registryPaths) {
     $installed = Get-ItemProperty -Path $path | Where-Object { $_.DisplayName -eq $SoftwareName }
     if ($installed) {
         $version = $installed.DisplayVersion
-        Write-Verbose "$SoftwareName version $version is installed."
+        Write-Debug "$SoftwareName version $version is installed."
         $result = [PSCustomObject]@{
             Software = $SoftwareName 
             Installed = $true
@@ -1689,7 +1689,7 @@ Write-Host "WARNING"
 Write-Host "$SoftwareName not detected"
 Write-Host "This manufacturer currently requires $SoftwareName installed to check expiry"
 Write-Host "###########################"
-Write-Verbose "$SoftwareName is not installed."
+Write-Debug "$SoftwareName is not installed."
 $result = [PSCustomObject]@{
     Software = $SoftwareName 
     Installed = $false
