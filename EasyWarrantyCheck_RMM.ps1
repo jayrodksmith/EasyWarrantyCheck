@@ -259,6 +259,7 @@ function Get-WarrantyAsus {
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
+            Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -284,7 +285,7 @@ function Get-WarrantyAsus {
             $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
             $submitcheckcookiesButton.Click()
         } catch{
-
+            Write-Verbose $_.Exception.Message
         }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
@@ -408,6 +409,7 @@ function Get-WarrantyDell {
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
+            Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -526,7 +528,7 @@ function Get-WarrantyEdsys {
         try {
             $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
         }catch{
-            Write-Host $($_.Exception.Message)
+            Write-Verbose $_.Exception.Message
         }
         if($response){
         # Output the response
@@ -677,6 +679,7 @@ function Get-WarrantyHP {
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
+            Write-Verbose $_.Exception.Message
             Write-Host "###########################"
             Write-Host "WARNING"
             Write-Host "$($browserinstalled.software) not detected"
@@ -1237,18 +1240,19 @@ function Get-RunAsUserModule {
     
     #>
     try {
-        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
-    }catch{
+        Set-ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    } catch {
         
     }
     Import-Module PowerShellGet
-    $RunAsUser = Get-Module -Name RunAsUser -ListAvailable
+    $RunAsUser = Get-Module -Name RunAsUser -ListAvailable | Where-Object { $_.Version -eq '2.4.0' }
     if (-not $RunAsUser) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module RunAsUser -Force
+        Install-Module RunAsUser -Force -RequiredVersion '2.4.0'
     }
-    Import-Module RunAsUser -Force
+    Import-Module RunAsUser -Force -Version '2.4.0'
 }
+
 
 function Get-SeleniumModule {
     <#
@@ -1268,12 +1272,12 @@ function Get-SeleniumModule {
         
     }
     Import-Module PowerShellGet
-    $seleniumModule = Get-Module -Name Selenium -ListAvailable
+    $seleniumModule = Get-Module -Name Selenium -ListAvailable | Where-Object { $_.Version -eq '3.0.1' }
     if (-not $seleniumModule) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module Selenium -Force
+        Install-Module Selenium -Force -RequiredVersion '3.0.1'
     }
-    Import-Module Selenium -Force
+    Import-Module Selenium -Force -Version '3.0.1'
 }
 
 function Get-SeleniumModule4 {
@@ -1436,7 +1440,7 @@ function Get-WebDriver {
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
-
+            Write-Verbose $_.Exception.Message
         }
         # Expand archive and replace the old file
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
@@ -1452,7 +1456,7 @@ function Get-WebDriver {
         try {
             $edgeVersion   = (Get-Item (Get-ItemProperty $edgeRegistryPath).'(Default)').VersionInfo.ProductVersion
         } catch {
-
+            Write-Verbose $_.Exception.Message
         }
         # check which driver versions are installed
         $edgeDriverVersion   = Get-LocalDriverVersion -pathToDriver $edgeDriverPath
@@ -1477,7 +1481,11 @@ function Get-WebDriver {
             }
         
             # download the file
-            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
+            try {
+                Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
+            } catch{
+                Write-Verbose $_.Exception.Message
+            }
         
             # epand archive and replace the old file
             Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force
@@ -1535,14 +1543,18 @@ function Start-SeleniumModule {
                 ) })
             $driver = New-Object OpenQA.Selenium.Edge.EdgeDriver($EdgeService, $edgeOptions)
             Start-Sleep -Seconds 3
+            return $driver
         }
         $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
+        Write-Verbose "Driver Invoked : $invokeasuser"
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
+        Write-Verbose "msedgedriver.exe process : $commandLine"
         # Regular expression pattern to match port number
         $portPattern = '--port=(\d+)'
         if ($commandLine -match $portPattern) {
             $driverportnumber = $matches[1]
+            Write-Verbose "Driver Port Number : $driverportnumber"
         } else {
             Write-Output "Port number not found."
         }
@@ -1557,6 +1569,7 @@ function Start-SeleniumModule {
             "debuggerAddress" = $debuggerAddress
         })
         # Connect to the existing Edge session
+        
         return $driver = New-Object OpenQA.Selenium.Remote.RemoteWebDriver($remoteAddress, $options)
     } 
     if($WebDriver -eq "Chrome"){
@@ -1606,6 +1619,7 @@ function Stop-SeleniumModule {
         foreach ($process in $headlessEdgeProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
+                Write-Verbose "Stopping : $processID"
                 Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
             }
@@ -1618,6 +1632,7 @@ function Stop-SeleniumModule {
         foreach ($process in $driverProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
+                Write-Verbose "Stopping : $processID"
                 Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
 
