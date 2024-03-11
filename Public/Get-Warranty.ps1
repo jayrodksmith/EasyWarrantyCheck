@@ -26,6 +26,7 @@ function Get-Warranty {
         
         # Web Driver mode, Edge or Chrome ( Edge Beta Support )
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [ValidateSet('Chrome', 'Edge')]
         [String]$Seleniumdrivermode = 'Chrome',
 
@@ -36,7 +37,7 @@ function Get-Warranty {
         # Enable Registry Storing
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [bool]$EnableRegistry = $true,
-    
+
         # Registry Path
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [String]$RegistryPath = 'HKLM:\SOFTWARE\RMMCustomInfo\',
@@ -46,6 +47,7 @@ function Get-Warranty {
         [bool]$ForceUpdate = $false,
     
         # Custom Machine Details, available in both sets
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [String]$Serial = 'Automatic',
     

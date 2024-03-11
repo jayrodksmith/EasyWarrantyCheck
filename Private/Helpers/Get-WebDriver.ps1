@@ -106,11 +106,11 @@ function Get-WebDriver {
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
-
+            Write-Verbose $_.Exception.Message
         }
         # Expand archive and replace the old file
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
-        Move-Item      "$webDriversPath\tempchrome\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
+        Move-Item      "$webDriversPath\tempchrome\chromedriver-win64\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
 
         # clean-up
         Remove-Item "$webDriversPath\chromeNewDriver.zip" -Force | Out-Null
@@ -122,7 +122,7 @@ function Get-WebDriver {
         try {
             $edgeVersion   = (Get-Item (Get-ItemProperty $edgeRegistryPath).'(Default)').VersionInfo.ProductVersion
         } catch {
-
+            Write-Verbose $_.Exception.Message
         }
         # check which driver versions are installed
         $edgeDriverVersion   = Get-LocalDriverVersion -pathToDriver $edgeDriverPath
@@ -147,7 +147,11 @@ function Get-WebDriver {
             }
         
             # download the file
-            Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
+            try {
+                Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
+            } catch{
+                Write-Verbose $_.Exception.Message
+            }
         
             # epand archive and replace the old file
             Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force

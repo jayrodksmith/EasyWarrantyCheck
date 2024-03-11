@@ -11,15 +11,15 @@ function Get-RunAsUserModule {
     
     #>
     try {
-        Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
-    }catch{
+        Set-ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+    } catch {
         
     }
-    Import-Module PowerShellGet
-    $RunAsUser = Get-Module -Name RunAsUser -ListAvailable
+    Import-Module PowerShellGet -Verbose:$false
+    $RunAsUser = Get-Module -Name RunAsUser -ListAvailable | Where-Object { $_.Version -eq '2.4.0' }
     if (-not $RunAsUser) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module RunAsUser -Force
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
+        Install-Module RunAsUser -Force -RequiredVersion '2.4.0' -Verbose:$false
     }
-    Import-Module RunAsUser -Force
+    Import-Module RunAsUser -Force -Version '2.4.0' -Verbose:$false
 }

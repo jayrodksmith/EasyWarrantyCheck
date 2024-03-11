@@ -33,6 +33,7 @@ function Stop-SeleniumModule {
         foreach ($process in $headlessEdgeProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
+                Write-Verbose "Stopping : $processID"
                 Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
             }
@@ -45,15 +46,16 @@ function Stop-SeleniumModule {
         foreach ($process in $driverProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
+                Write-Verbose "Stopping : $processID"
                 Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
 
             }
         }
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null 
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null 
     } 
     if($WebDriver -eq "Chrome"){
         $driver.quit()
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue | Out-null
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null
     }
 }
