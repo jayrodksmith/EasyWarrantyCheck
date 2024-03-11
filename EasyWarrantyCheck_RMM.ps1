@@ -252,14 +252,14 @@ function Get-WarrantyAsus {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-            Remove-Module Selenium
+            Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Start a new browser session with headless mode
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -270,7 +270,7 @@ function Get-WarrantyAsus {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-            Remove-Module Selenium
+            Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Navigate to the warranty check URL
@@ -285,7 +285,7 @@ function Get-WarrantyAsus {
             $submitcheckcookiesButton = $driver.FindElementByXPath("//div[@class='btn-asus btn-ok btn-read-ck' and @aria-label='Accept']")
             $submitcheckcookiesButton.Click()
         } catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
         }
         $checkPrivacyButton = $driver.FindElementById("checkPrivacy")
         $checkPrivacyButton.Click()
@@ -402,14 +402,14 @@ function Get-WarrantyDell {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-            Remove-Module Selenium
+            Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Start a new browser session with headless mode
         try{
             $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
                 'Serial' = $Serial
                 'Warranty Product name' = $null
@@ -420,7 +420,7 @@ function Get-WarrantyDell {
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
-            Remove-Module Selenium
+            Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Navigate to the warranty check URL
@@ -528,7 +528,7 @@ function Get-WarrantyEdsys {
         try {
             $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/x-www-form-urlencoded" -UseBasicParsing
         }catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
         }
         if($response){
         # Output the response
@@ -679,7 +679,7 @@ function Get-WarrantyHP {
     }
     catch {
         if ($PSCmdlet.ParameterSetName -eq 'Default') {
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
             Write-Host "###########################"
             Write-Host "WARNING"
             Write-Host "$($browserinstalled.software) not detected"
@@ -703,7 +703,7 @@ function Get-WarrantyHP {
                     'Product Image'         = $null
                     'Warranty URL'          = $null
                 }
-                Remove-Module Selenium
+                Remove-Module Selenium -Verbose:$false
                 return $warObj
             }
             catch {
@@ -718,7 +718,7 @@ function Get-WarrantyHP {
                     'Product Image'         = $null
                     'Warranty URL'          = $null
                 }
-                Remove-Module Selenium
+                Remove-Module Selenium -Verbose:$false
                 return $warObj
             }
         }
@@ -744,13 +744,13 @@ function Get-WarrantyHP {
         $errorMsgElement = $driver.FindElementByClassName("errorTxt")
     }
     catch {
-        Write-Debug "No Product Model required"
+        Write-Verbose "No Product Model required"
     }
 
     if ($null -ne $errorMsgElement -and $null -ne $SystemSKU) {
         # Error message found
         Write-Host "Using SystemSKU input"
-        Write-Debug "Need Product ID"
+        Write-Verbose "Need Product ID"
         $productField = $driver.FindElementById("product-number inputtextPN")
         $productField.SendKeys($SystemSKU)
         $submitButton = $driver.FindElementById("FindMyProductNumber")
@@ -764,7 +764,7 @@ function Get-WarrantyHP {
     elseif ($null -ne $errorMsgElement -and $global:ServerMode -ne $true) {
         # Error message found
         Write-Host "Searching for additional SystemSKU......."
-        Write-Debug "Need Product ID"
+        Write-Verbose "Need Product ID"
         # Define the registry path
         $regPath = "HKLM:\HARDWARE\DESCRIPTION\System\BIOS"
         # Get the value of "SystemSKU" if it exists
@@ -1244,13 +1244,13 @@ function Get-RunAsUserModule {
     } catch {
         
     }
-    Import-Module PowerShellGet
+    Import-Module PowerShellGet -Verbose:$false
     $RunAsUser = Get-Module -Name RunAsUser -ListAvailable | Where-Object { $_.Version -eq '2.4.0' }
     if (-not $RunAsUser) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module RunAsUser -Force -RequiredVersion '2.4.0'
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
+        Install-Module RunAsUser -Force -RequiredVersion '2.4.0' -Verbose:$false
     }
-    Import-Module RunAsUser -Force -Version '2.4.0'
+    Import-Module RunAsUser -Force -Version '2.4.0' -Verbose:$false
 }
 
 
@@ -1271,13 +1271,13 @@ function Get-SeleniumModule {
     }catch{
         
     }
-    Import-Module PowerShellGet
+    Import-Module PowerShellGet -Verbose:$false
     $seleniumModule = Get-Module -Name Selenium -ListAvailable | Where-Object { $_.Version -eq '3.0.1' }
     if (-not $seleniumModule) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module Selenium -Force -RequiredVersion '3.0.1'
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
+        Install-Module Selenium -Force -RequiredVersion '3.0.1' -Verbose:$false
     }
-    Import-Module Selenium -Force -Version '3.0.1'
+    Import-Module Selenium -Force -Version '3.0.1' -Verbose:$false
 }
 
 function Get-SeleniumModule4 {
@@ -1405,9 +1405,9 @@ function Get-WebDriver {
         if (-not (Test-Path -Path $webDriversPath -PathType Container)) {
             # Directory doesn't exist, create it
             New-Item -Path $webDriversPath -ItemType Directory -Force | Out-Null
-            Write-Debug "Directory created successfully."
+            Write-Verbose "Directory created successfully."
         } else {
-            Write-Debug "Directory already exists."
+            Write-Verbose "Directory already exists."
         }
     } catch {
         Write-Host "An error occurred: $_"
@@ -1440,7 +1440,7 @@ function Get-WebDriver {
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
         }catch{
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
         }
         # Expand archive and replace the old file
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
@@ -1456,7 +1456,7 @@ function Get-WebDriver {
         try {
             $edgeVersion   = (Get-Item (Get-ItemProperty $edgeRegistryPath).'(Default)').VersionInfo.ProductVersion
         } catch {
-            Write-Debug $_.Exception.Message
+            Write-Verbose $_.Exception.Message
         }
         # check which driver versions are installed
         $edgeDriverVersion   = Get-LocalDriverVersion -pathToDriver $edgeDriverPath
@@ -1484,7 +1484,7 @@ function Get-WebDriver {
             try {
                 Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\edgeNewDriver.zip"
             } catch{
-                Write-Debug $_.Exception.Message
+                Write-Verbose $_.Exception.Message
             }
         
             # epand archive and replace the old file
@@ -1524,7 +1524,7 @@ function Start-SeleniumModule {
     )
     if($WebDriver  -eq "Edge"){
         Get-RunAsUserModule
-        Import-Module -Name RunAsUser
+        Import-Module -Name RunAsUser -Verbose:$false
         $scriptblock = {
             Import-Module Selenium
             $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
@@ -1546,15 +1546,15 @@ function Start-SeleniumModule {
             return $driver
         }
         $invokeasuser = invoke-ascurrentuser -scriptblock $scriptblock -UseWindowsPowerShell -CaptureOutput
-        Write-Debug "Driver Invoked : $invokeasuser"
+        Write-Verbose "Driver Invoked : $invokeasuser"
         $process =  "msedgedriver.exe"
         $commandLine = Get-CimInstance Win32_Process -Filter "name = '$process'" | select CommandLine
-        Write-Debug "msedgedriver.exe process : $commandLine"
+        Write-Verbose "msedgedriver.exe process : $commandLine"
         # Regular expression pattern to match port number
         $portPattern = '--port=(\d+)'
         if ($commandLine -match $portPattern) {
             $driverportnumber = $matches[1]
-            Write-Debug "Driver Port Number : $driverportnumber"
+            Write-Verbose "Driver Port Number : $driverportnumber"
         } else {
             Write-Output "Port number not found."
         }
@@ -1619,7 +1619,7 @@ function Stop-SeleniumModule {
         foreach ($process in $headlessEdgeProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
-                Write-Debug "Stopping : $processID"
+                Write-Verbose "Stopping : $processID"
                 Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
             }
@@ -1632,7 +1632,7 @@ function Stop-SeleniumModule {
         foreach ($process in $driverProcesses) {
             $processID = $process.ProcessId
             if ($processID -ne $null) {
-                Write-Debug "Stopping : $processID"
+                Write-Verbose "Stopping : $processID"
                 Stop-Process -Id $processID -Force -ErrorAction SilentlyContinue | Out-null
             } else {
 
@@ -1674,7 +1674,7 @@ foreach ($path in $registryPaths) {
     $installed = Get-ItemProperty -Path $path | Where-Object { $_.DisplayName -eq $SoftwareName }
     if ($installed) {
         $version = $installed.DisplayVersion
-        Write-Debug "$SoftwareName version $version is installed."
+        Write-Verbose "$SoftwareName version $version is installed."
         $result = [PSCustomObject]@{
             Software = $SoftwareName 
             Installed = $true
@@ -1689,7 +1689,7 @@ Write-Host "WARNING"
 Write-Host "$SoftwareName not detected"
 Write-Host "This manufacturer currently requires $SoftwareName installed to check expiry"
 Write-Host "###########################"
-Write-Debug "$SoftwareName is not installed."
+Write-Verbose "$SoftwareName is not installed."
 $result = [PSCustomObject]@{
     Software = $SoftwareName 
     Installed = $false
@@ -1737,9 +1737,9 @@ function Write-WarrantyRegistry{
                 if (-not (Test-Path $RegistryPath)) {
                     # Create the registry key if it doesn't exist
                     New-Item -Path $RegistryPath -Force -ErrorAction SilentlyContinue | Out-Null
-                    Write-Debug "Registry key created successfully."
+                    Write-Verbose "Registry key created successfully."
                 } else {
-                    Write-Debug "Registry key already exists."
+                    Write-Verbose "Registry key already exists."
                 }
                 if($Warrantystart){
                     New-ItemProperty -Path $RegistryPath -Name "WarrantyStart" -PropertyType String -Value $Warrantystart -Force -ErrorAction SilentlyContinue | Out-Null
