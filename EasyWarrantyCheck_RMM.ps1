@@ -116,6 +116,9 @@ function Get-Warranty {
         
     $Notsupported = $false
     switch -Wildcard ($mfg) {
+        "TERRA" {
+            $Warobj = Get-WarrantyTerra -Serial $serialnumber -DateFormat $DateFormat
+        }
         "EDSYS" {
             $Warobj = Get-WarrantyEdsys -Serial $serialnumber -DateFormat $DateFormat
         }
@@ -1052,6 +1055,154 @@ function Get-WarrantyMicrosoft {
     return $WarObj
 }
 
+function Get-WarrantyTerra {
+    <#
+        .SYNOPSIS
+        Function to get Terra Warranty
+    
+        .DESCRIPTION
+        This function will get Terra Warranty
+    
+        .EXAMPLE
+        Get-WarrantyTerra -Serial "SerialNumber"
+    
+        .PARAMETER Serial
+        Set Serial
+
+        .PARAMETER DateFormat
+        Set DateFormat
+    
+    #>
+        [CmdletBinding(SupportsShouldProcess)]
+        param(
+            [Parameter(Mandatory = $true)]
+            [String]$Serial,
+            [Parameter(Mandatory = $false)]
+            [String]$DateFormat = 'dd-MM-yyyy'
+        )
+        Get-WebDriver -WebDriver $Seleniumdrivermode
+        Get-SeleniumModule
+        if ($Seleniumdrivermode -eq "Chrome" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
+        }
+        if ($Seleniumdrivermode -eq "Edge" ){
+            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
+        }
+        if ($browserinstalled.Installed -eq $false){
+            Write-Host "###########################"
+            Write-Host "WARNING"
+            Write-Host "$($browserinstalled.software) not detected"
+            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
+            Write-Host "###########################"
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium -Verbose:$false
+            return $warObj
+        }
+        # Start a new browser session with headless mode
+        try{
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $false
+        }catch{
+            Write-Verbose $_.Exception.Message
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium -Verbose:$false
+            return $warObj
+        }
+        # Navigate to the warranty check URL
+        Write-Host "Checking Terra website for serial : $Serial"
+        $driver.Navigate().GoToUrl("https://www.wortmann.de/en-gb/profile/snsearch.aspx")
+        # Locate and input the serial number into the form
+        $serialnumber = $Serial
+        $inputField = $driver.FindElementById("ctl00_ctl00_ctl00_SiteContent_SiteContent_SiteContent_textSerialNo")
+        $inputField.SendKeys($serialnumber)
+        # Find and click the submit button
+        $submitButton = $driver.FindElementById("ctl00_ctl00_ctl00_SiteContent_SiteContent_SiteContent_LinkButtonSearch")
+        $submitButton.Click()
+        Write-Host "Waiting for results......."
+        start-sleep -Seconds 10
+        # Find the rows in the table
+        # Find the table element by its ID
+        $table = $driver.FindElementById("ctl00_ctl00_ctl00_SiteContent_SiteContent_SiteContent_DetailsViewProductInfo")
+
+        # Get all rows from the table
+        $rows = $table.FindElements([OpenQA.Selenium.By]::TagName("tr"))
+
+        # Create an empty hashtable to store the field-value pairs
+        $table1 = @{}
+
+        # Iterate over each row in the table
+        foreach ($row in $rows) {
+            # Get the cells from the row
+            $cells = $row.FindElements([OpenQA.Selenium.By]::TagName("td"))
+            
+            # Extract the field name and value
+            $fieldName = $cells[0].Text
+            $fieldValue = $cells[1].Text
+            
+            # Add the field and value to the hashtable
+            $table1[$fieldName] = $fieldValue
+        }
+
+        # Close the browser
+        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        $warEndDate = $($table1.'Warranty ending date')
+        $warEndDate = [DateTime]::ParseExact($warEndDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+        $warEndDate = $warEndDate.ToString($dateformat)
+
+        $warstartDate = $($table1.'Warranty starting date')
+        $warstartDate= [DateTime]::ParseExact($warstartDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+        $warstartDate = $warstartDate.ToString($dateformat)
+
+        $warrantyStatus = $null
+        if ($warStartDate -gt (Get-Date)) {
+            $warrantyStatus = "Within Warranty"
+        } else {
+            $warrantyStatus = "Expired"
+        }
+        
+        if ($($table.'Warranty Status')) {
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $serialnumber
+                'Warranty Product name' = $($table1.'Description')
+                'StartDate' = $warstartDate
+                'EndDate' = $warEndDate
+                'Warranty Status' = $warrantystatus
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+        } else {
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+        } 
+    return $WarObj
+}
+
 function Get-WarrantyToshiba {
     <#
         .SYNOPSIS
@@ -1171,6 +1322,8 @@ function Get-MachineInfo {
             "IBM" { $Mfg = "LENOVO" }
             "Hewlett-Packard" { $Mfg = "HP" }
             {$_ -match "Asus"} { $Mfg = "ASUS" }
+            {$_ -match "Wortmann"} { $Mfg = "TERRA" }
+            {$_ -match "Terra"} { $Mfg = "TERRA" }
             {$_ -match "Dell"} { $Mfg = "DELL" }
             {$_ -match "HP"} { $Mfg = "HP" }
             {$_ -match "Edsys"} { $Mfg = "EDSYS" }
@@ -1751,6 +1904,212 @@ function Write-WarrantyRegistry{
                 return "Warranty details saved to Registry $RegistryPath"
                 }
     }
+
+function  Get-DevicesNinjaRMM {
+    [CmdletBinding()]
+    Param(
+        [string]$NinjaURL = "https://oc.ninjarmm.com",
+        [String]$Secretkey = "test"
+        [String]$AccessKey = "test"
+        [boolean]$SyncWithSource,
+        [boolean]$OverwriteWarranty,
+        [string]$NinjaFieldName
+    )
+    $AuthBody = @{
+        'grant_type'    = 'client_credentials'
+        'client_id'     = $Secretkey
+        'client_secret' = $AccessKey
+        'scope'         = 'management monitoring' 
+    }
+    
+    $Result = Invoke-WebRequest -uri "$($NinjaURL)/ws/oauth/token" -Method POST -Body $AuthBody -ContentType 'application/x-www-form-urlencoded'
+    
+    $AuthHeader = @{
+        'Authorization' = "Bearer $(($Result.content | convertfrom-json).access_token)"
+    }
+
+    $OrgsRaw = Invoke-WebRequest -uri "$($NinjaURL)/v2/organizations" -Method GET -Headers $AuthHeader
+    $NinjaOrgs = $OrgsRaw | ConvertFrom-Json
+    
+    $date1 = Get-Date -Date "01/01/1970"  
+
+    If ($ResumeLast) {
+        write-host "Found previous run results. Starting from last object." -foregroundColor green
+        $Devices = get-content 'Devices.json' | convertfrom-json
+    } else {
+        $DevicesRaw = Invoke-WebRequest -uri "$($NinjaURL)/v2/devices-detailed" -Method GET -Headers $AuthHeader
+        $Devices = ($DevicesRaw.content | ConvertFrom-Json) | Where-Object { $_.nodeClass -like "WINDOWS*" -and $_.system.model -notmatch "Virtual Machine"}
+
+        $After = 0
+        $PageSize = 1000
+        $AllDevices = @()
+
+        do {
+            $Result = (Invoke-WebRequest -Uri "$($NinjaURL)/v2/devices-detailed?pageSize=$PageSize&after=$After" -Method Get -Headers $AuthHeader -ContentType 'application/json').Content | ConvertFrom-Json -Depth 100 | Where-Object { $_.nodeClass -like "WINDOWS*" -and $_.system.model -notmatch "Virtual Machine"}
+        
+            $AllDevices += $Result
+        
+            $ResultCount = $Result.Count
+            $After = $Result[-1].id  # Set the value for the next iteration
+        
+        } while ($ResultCount -eq $PageSize)
+        
+        # Combine initial devices with paged devices
+        $Devices += $AllDevices
+
+    }
+    $i = 0
+    $warrantyObject = foreach ($device in $Devices) {
+        $i++
+        $progressPercentage = [math]::Round(($i / $Devices.Count * 100), 2)
+        Write-Progress -Activity "Grabbing Warranty information" -status "Processing $($device.system.biosSerialNumber). Device $i of $($Devices.Count)" -percentComplete $progressPercentage
+        $DeviceOrg = ($NinjaOrgs | Where-Object { $_.id -eq $Device.organizationId }).name
+        try {
+            if($device.system.manufacturer -eq "ASUSTeK COMPUTER INC."){$vendor = "ASUS"}
+            $WarState = Get-Warrantyinfo -Serialnumber $device.system.biosSerialNumber -client $DeviceOrg -Vendor $vendor
+        } catch {
+            Write-Error "Failed to fetch warranty data for device: $($Device.systemName) $_"
+        }
+            $DeviceObject = [PSCustomObject]@{
+            id = $device.id
+            organizationId = $device.organizationId
+            systemname = $device.systemname
+            biosSerialNumber = $device.system.biosSerialNumber
+            SerialNumber = $device.system.SerialNumber
+            manufacturer = $device.system.manufacturer
+            model = $device.system.model
+        }
+        # Convert the current device object to JSON and append it to the file
+        $Null = $DeviceObject | ConvertTo-Json -Depth 5 | Add-Content 'Devices.json'
+        # Sleep for a short duration to simulate processing time (optional)
+        Start-Sleep -Milliseconds 100
+        if ($progressPercentage -eq 100) {
+            Write-Progress -Activity "Grabbing Warranty information" -status "Processing Complete" -percentComplete 100
+            Start-Sleep -Milliseconds 500
+            Write-Progress -Activity "Grabbing Warranty information" -Completed
+        }
+
+        if ($warstate.EndDate) {
+            $Seconds = [int]([math]::Truncate((New-TimeSpan -Start $date1 -End $warstate.EndDate).TotalSeconds))
+            $UpdateBody = @{
+                "$NinjaFieldName" = $Seconds
+            } | convertto-json
+            
+            if ($SyncWithSource -eq $true) {
+                switch ($OverwriteWarranty) {
+                    $true {
+                        
+                        try {
+                           # $Result = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method PATCH -Headers $AuthHeader -body $UpdateBody -contenttype 'application/json' -ea stop
+                        } catch {
+                            Write-Error "Failed to update device: $($Device.systemName) $_"
+                        }
+                    }
+                    $false {
+                       # $DeviceFields = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method GET -Headers $AuthHeader
+                       # $WarrantyDate = ($DeviceFields.content | convertfrom-json)."$($NinjaFieldName)"
+
+                        if ($null -eq $WarrantyDate -and $null -ne $warstate.EndDate) { 
+                            try {
+                               # $Result = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method PATCH -Headers $AuthHeader -body $UpdateBody -contenttype 'application/json' -ea stop
+                            } catch {
+                                Write-Error "Failed to update device: $($Device.systemName) $_"
+                            }        
+                        } 
+                    }
+                }
+            }
+        }
+        $WarState
+    }
+    Remove-item 'devices.json' -Force -ErrorAction SilentlyContinue
+    return $warrantyObject
+
+}
+
+function  Get-Warrantyinfo {
+    [CmdletBinding()]
+    Param(
+        [string]$serialnumber,
+        [String]$client,
+        [String]$DateFormat = 'dd-MM-yyyy',
+        [String]$vendor
+    )
+    if ($LogActions) { add-content -path $LogFile -Value "Starting lookup for $($DeviceSerial),$($Client)" -force }
+    if ($vendor) {
+        switch -Wildcard ($vendor) {
+            "EDSYS" {
+                $Warobj = Get-WarrantyEdsys -Serial $serialnumber -DateFormat $DateFormat
+            }
+            "ASUS" {
+                $Warobj = Get-WarrantyAsus -Serial $serialnumber -DateFormat $DateFormat
+            }
+            "LENOVO" {
+                $Warobj = Get-WarrantyLenovo -Serial $serialnumber -DateFormat $DateFormat
+            }
+            "DELL" {
+                $Warobj = Get-WarrantyDell -Serial $serialnumber -DateFormat $DateFormat
+            }
+            "HP" {
+                if ($HpSystemSKU) {
+                    $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat -SystemSKU $HpSystemSKU
+                }
+                else {
+                    $Warobj = Get-WarrantyHP -Serial $serialnumber -DateFormat $DateFormat
+                }
+            }
+            "MICROSOFT" {
+                if ($($machineinfo.Model) -like 'SurfaceNotSupportedYet') {
+                    $Warobj = Get-WarrantyMicrosoft -Serial $serialnumber -DateFormat $DateFormat
+                }
+                else {
+                    $Notsupported = $true
+                    Write-Host "Microsoft Model not Supported"
+                    Write-Host "Manufacturer  :  $mfg"
+                    Write-Host "Model         :  $($machineinfo.Model)"
+                }
+                    
+            }
+            "TOSHIBA" {
+                $Warobj = Get-WarrantyToshiba -Serial $serialnumber -DateFormat $DateFormat
+            }
+            default {
+                $Notsupported = $true
+                Write-Host "Manufacturer or Model not Supported"
+                Write-Host "Manufacturer  :  $mfg"
+                Write-Host "Model         :  $($machineinfo.Model)"
+            }
+        }
+    }
+    else {
+        switch ($DeviceSerial.Length) {
+            7 { get-DellWarranty -SourceDevice $DeviceSerial -client $Client }
+            8 { get-LenovoWarranty -SourceDevice $DeviceSerial -client $Client }
+            9 { get-ToshibaWarranty -SourceDevice $DeviceSerial -client $line.client }
+            10 { get-HPWarranty  -SourceDevice $DeviceSerial -client $Client }
+            12 {
+                if ($DeviceSerial -match "^\d+$") {
+                    Get-MSWarranty  -SourceDevice $DeviceSerial -client $Client 
+                }
+                else {
+                    Get-AppleWarranty -SourceDevice $DeviceSerial -client $Client
+                } 
+            }
+            default {
+                [PSCustomObject]@{
+                    'Serial'                = $DeviceSerial
+                    'Warranty Product name' = 'Could not get warranty information.'
+                    'StartDate'             = $null
+                    'EndDate'               = $null
+                    'Warranty Status'       = 'Could not get warranty information'
+                    'Client'                = $Client
+                }
+            }
+        }
+    }
+    if ($LogActions) { add-content -path $LogFile -Value "Ended lookup for $($DeviceSerial),$($Client)" }
+    return $Warobj
+}
 
 function Get-WarrantyNinjaRMM {
     <#
