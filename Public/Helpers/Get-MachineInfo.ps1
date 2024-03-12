@@ -38,6 +38,8 @@ function Get-MachineInfo {
             "IBM" { $Mfg = "LENOVO" }
             "Hewlett-Packard" { $Mfg = "HP" }
             {$_ -match "Asus"} { $Mfg = "ASUS" }
+            {$_ -match "Wortmann"} { $Mfg = "TERRA" }
+            {$_ -match "Terra"} { $Mfg = "TERRA" }
             {$_ -match "Dell"} { $Mfg = "DELL" }
             {$_ -match "HP"} { $Mfg = "HP" }
             {$_ -match "Edsys"} { $Mfg = "EDSYS" }
