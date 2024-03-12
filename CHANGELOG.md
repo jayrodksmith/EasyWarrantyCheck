@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+# [1.0.3] - 13-03-2024
+
+### Added
+
+- Added Terra warranty support
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
 # [1.0.2] - 11-03-2024
 
 ### Added
