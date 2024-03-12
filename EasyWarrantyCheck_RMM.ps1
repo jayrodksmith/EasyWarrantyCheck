@@ -458,8 +458,25 @@ function Get-WarrantyDell {
                 $warEndDate = $FormattedDate
                 $warrantystatus = "In Warranty"
             }
+            # Try for Start Date
+            try {
+                $checkDeviceDetails = $driver.FindElementByClassName("dds__button--secondary")
+                $checkDeviceDetails.Click()
+                Start-Sleep -Seconds 10
+                $ManageServicesButton = $driver.FindElementByClassName("viewDetailsWarranty")
+                $ManageServicesButton.Click()
+                Start-Sleep -Seconds 10
+                $PurchaseDateElement = $driver.FindElementById("dsk-purchaseDt")
+                $PurchaseDate = $PurchaseDateElement.Text
+                $WarrantystartDate = [datetime]::ParseExact($PurchaseDate, "dd MMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+                $warStartDate = $WarrantystartDate.ToString($dateformat)
+            } catch {
+                Write-Host "The purchase date field could not be found."
+                $warStartDate = $null
+            }
+            
         } else {
-            Write-Host "No matching text found for warranty status"
+            Write-Host "No matching text found for warranty end date "
         }
         # Close the browser
         Stop-SeleniumModule -WebDriver $Seleniumdrivermode
@@ -468,7 +485,7 @@ function Get-WarrantyDell {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
+                'StartDate' = $warStartDate
                 'EndDate' = $warEndDate
                 'Warranty Status' = $warrantystatus
                 'Client' = $null
@@ -791,19 +808,13 @@ function Get-WarrantyHP {
     }
     # Find the element containing the 'Start date' text
     try {
-        $startDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c70-0 ng-star-inserted']//div[@class='label ng-tns-c70-0' and contains(text(), 'Start date')]/following-sibling::div[@class='text ng-tns-c70-0']")
+        $startDateElement = $driver.FindElementByXPath("//div[contains(@class,'info-item')]//div[contains(@class,'label') and contains(text(), 'Start date')]/following-sibling::div[contains(@class,'text')]")
     }
     catch {
         $startDateElement = $null
+        Write-Host "Could not find warranty Start date"
     }
-    if (-not $startDateElement) {
-        try {
-            $startDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'Start date')]/following-sibling::div[@class='text ng-tns-c72-0']")
-        }
-        catch {
-            Write-Host "Could not find warranty Start date"
-        }
-    }
+
     if ($startDateElement) {
         # Get the text of the 'Start date' element
         $startDateText = $startDateElement.Text
@@ -811,19 +822,14 @@ function Get-WarrantyHP {
     }     
     try {
         # Find the element containing the 'End date' text
-        $endDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c70-0 ng-star-inserted']//div[@class='label ng-tns-c70-0' and contains(text(), 'End date')]/following-sibling::div[@class='text ng-tns-c70-0']")
+        $endDateElement = $driver.FindElementByXPath("//div[contains(@class,'info-item')]//div[contains(@class,'label') and contains(text(), 'End date')]/following-sibling::div[contains(@class,'text')]")
+
     }
     catch {
         $endDateElement = $null
+        Write-Host "Could not find warranty End date"
     }
-    if (-not $endDateElement) {
-        try {
-            $endDateElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'End date')]/following-sibling::div[@class='text ng-tns-c72-0']")
-        }
-        catch {
-            Write-Host "Could not find warranty End date"
-        }
-    }
+
     if ($endDateElement) {
         # Get the text of the 'End date' element
         $endDateText = $endDateElement.Text
@@ -831,19 +837,13 @@ function Get-WarrantyHP {
     }     
     try {
         # Find the element containing the 'Warranty Status' or 'Time Remaining' text
-        $warrantyStatusElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c70-0 ng-star-inserted']//div[@class='label ng-tns-c70-0' and contains(text(), 'Time Remaining')]/following-sibling::div[@class='text ng-tns-c70-0']")       
+        $warrantyStatusElement = $driver.FindElementByXPath("//div[contains(@class,'info-item')]//div[contains(@class,'label') and contains(text(), 'Time Remaining')]/following-sibling::div[contains(@class,'text')]")
     }
     catch {
         $warrantyStatusElement = $null
+        Write-Host "Could not find warranty Status"
     }
-    if (-not $warrantyStatusElement) {
-        try {
-            $warrantyStatusElement = $driver.FindElementByXPath("//div[@class='info-item ng-tns-c72-0 ng-star-inserted']//div[@class='label ng-tns-c72-0' and contains(text(), 'Time Remaining')]/following-sibling::div[@class='text ng-tns-c72-0']")       
-        }
-        catch {
-            Write-Host "Could not find warranty Status"
-        } 
-    }
+
     if ($warrantyStatusElement) {
         $warrantyStatusText = $warrantyStatusElement.Text
         if ($warrantyStatusText -match "Expired") {
@@ -852,20 +852,13 @@ function Get-WarrantyHP {
     }     
     try {
         # Find the element containing the 'Product' information
-        $h2Element = $driver.FindElementByCssSelector(".product-info-text.ng-tns-c70-0 > h2")
+        $h2Element = $driver.FindElementByXPath("//main//h2")
     }
     catch {
         $h2Element = $null
+        Write-Host "Could not find Product Name"
     }
-    if (-not $h2Element) {
-        try {
-            # Find the element containing the 'Product' information
-            $h2Element = $driver.FindElementByCssSelector(".product-info-text.ng-tns-c72-0 > h2")
-        }
-        catch {
-            $h2Element = $null
-        }
-    }
+    
     if ($h2Element) {
         $product = $h2Element.Text
     }

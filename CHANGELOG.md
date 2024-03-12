@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+# [1.0.2] - 11-03-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- HP Lookup function
+
 # [1.0.1] - 11-03-2024
 
 ### Added
