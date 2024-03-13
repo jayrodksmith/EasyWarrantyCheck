@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+# [1.0.4] - 13-03-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Terra table check fix
+- Removed error in test script
+
 # [1.0.3] - 13-03-2024
 
 ### Added

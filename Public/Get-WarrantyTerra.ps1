@@ -52,7 +52,7 @@ function Get-WarrantyTerra {
         }
         # Start a new browser session with headless mode
         try{
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $false
+            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -79,7 +79,7 @@ function Get-WarrantyTerra {
         $submitButton = $driver.FindElementById("ctl00_ctl00_ctl00_SiteContent_SiteContent_SiteContent_LinkButtonSearch")
         $submitButton.Click()
         Write-Host "Waiting for results......."
-        start-sleep -Seconds 10
+        start-sleep -Seconds 15
         # Find the rows in the table
         # Find the table element by its ID
         $table = $driver.FindElementById("ctl00_ctl00_ctl00_SiteContent_SiteContent_SiteContent_DetailsViewProductInfo")
@@ -114,13 +114,13 @@ function Get-WarrantyTerra {
         $warstartDate = $warstartDate.ToString($dateformat)
 
         $warrantyStatus = $null
-        if ($warStartDate -gt (Get-Date)) {
+        if ((Get-Date $warEndDate) -gt (Get-Date)) {
             $warrantyStatus = "Within Warranty"
         } else {
             $warrantyStatus = "Expired"
         }
         
-        if ($($table.'Warranty Status')) {
+        if ($warrantyStatus) {
             $WarObj = [PSCustomObject]@{
                 'Serial' = $serialnumber
                 'Warranty Product name' = $($table1.'Description')
