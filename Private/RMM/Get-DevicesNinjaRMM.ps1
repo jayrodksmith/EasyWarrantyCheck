@@ -1,9 +1,9 @@
 function  Get-DevicesNinjaRMM {
     [CmdletBinding()]
     Param(
-        [string]$NinjaURL = "https://oc.ninjarmm.com",
-        [String]$Secretkey = "test",
-        [String]$AccessKey = "test",
+        [string]$NinjaURL = "https://oc.ninjarmm.com", # Adjust URL
+        [String]$Secretkey = "test", # Add key here
+        [String]$AccessKey = "test", # Add key here
         [boolean]$SyncWithSource,
         [boolean]$OverwriteWarranty,
         [string]$NinjaFieldName
