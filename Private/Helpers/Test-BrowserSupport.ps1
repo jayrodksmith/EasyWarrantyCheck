@@ -17,7 +17,7 @@ function Test-BrowserSupport {
     [CmdletBinding(SupportsShouldProcess)]
     param(
 		[Parameter(Mandatory = $false)]
-		[String]$Browser= $Seleniumdrivermode
+		[String]$Browser = "Chrome"
 	)
     # Check if running in system context
     function Test-SystemContext {
@@ -62,6 +62,7 @@ function Test-BrowserSupport {
 
     if ($Browser -eq "Edge") {
         if($edgesupport -eq $true){
+            Set-Variable DriverMode -Value "Edge" -Scope Global -option ReadOnly -Force
             return $true
         } else {
             if($systemcontext -eq $false) {Write-Host "Script not running system context cannot run Edge without system context"}
@@ -69,7 +70,7 @@ function Test-BrowserSupport {
             Write-Host "Microsoft Edge not supported, trying Chrome support"
             if($chrome.installed -eq $true) {
                 Write-Host "Defaulting to Chrome support"
-                Set-Variable Seleniumdrivermode -Value "Chrome" -Scope Global -Force
+                Set-Variable DriverMode -Value "Chrome" -Scope Global -option ReadOnly -Force
                 return $true
             } else {
                 Write-Host "Google Chrome not installed"
@@ -80,11 +81,12 @@ function Test-BrowserSupport {
 
     if ($Browser -eq "Chrome"){
         if($chrome.installed -eq $true) {
+            Set-Variable DriverMode -Value "Chrome" -Scope Global -option ReadOnly -Force
             return $true
         } else {
             Write-Host "Google Chrome not installed trying Edge support"
             if($edgesupport -eq $true){
-                Set-Variable Seleniumdrivermode -Value "Edge" -Scope Global -Force
+                Set-Variable DriverMode -Value "Edge" -Scope Global -option ReadOnly -Force
                 return $true
             } else {
                 if (($loggedInUsers = Get-LoggedInUser) -eq $false) {

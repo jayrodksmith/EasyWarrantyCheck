@@ -24,9 +24,6 @@ function Get-WarrantyAsus {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
 
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
-
         if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
                 'Serial'                = $Serial
@@ -43,9 +40,9 @@ function Get-WarrantyAsus {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -110,7 +107,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)

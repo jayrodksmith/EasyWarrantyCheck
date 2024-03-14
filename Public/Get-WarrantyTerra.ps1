@@ -24,9 +24,6 @@ function Get-WarrantyTerra {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
 
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
-
         if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
                 'Serial'                = $Serial
@@ -43,9 +40,9 @@ function Get-WarrantyTerra {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -97,7 +94,7 @@ function Get-WarrantyTerra {
         }
 
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
         $warEndDate = $($table1.'Warranty ending date')
         $warEndDate = [DateTime]::ParseExact($warEndDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)

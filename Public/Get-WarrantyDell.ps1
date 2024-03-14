@@ -23,8 +23,6 @@ function Get-WarrantyDell {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
 
         if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
@@ -42,9 +40,9 @@ function Get-WarrantyDell {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -114,7 +112,7 @@ function Get-WarrantyDell {
             Write-Host "No matching text found for warranty end date "
         }
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
 
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{

@@ -26,9 +26,6 @@ function Get-WarrantyHP {
         [String]$SystemSKU
     )
 
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
-
         if ($browsersupport -eq $false){
             Write-Host "Estimating Details from Registry"
             try {
@@ -69,9 +66,9 @@ function Get-WarrantyHP {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -206,7 +203,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+    Stop-SeleniumModule -WebDriver $DriverMode
 
     if ($endDateText) {
         $warfirst = $startDateText
