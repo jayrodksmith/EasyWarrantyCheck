@@ -23,47 +23,37 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        Get-WebDriver -WebDriver $Seleniumdrivermode
-        Get-SeleniumModule
-        if ($Seleniumdrivermode -eq "Chrome" ){
-            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
-        }
-        if ($Seleniumdrivermode -eq "Edge" ){
-            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
-        }
-        if ($browserinstalled.Installed -eq $false){
-            Write-Host "###########################"
-            Write-Host "WARNING"
-            Write-Host "$($browserinstalled.software) not detected"
-            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
-            Write-Host "###########################"
+
+        if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
+                'Serial'                = $Serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
             Remove-Module Selenium -Verbose:$false
             return $warObj
         }
         # Start a new browser session with headless mode
         try{
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            Get-WebDriver -WebDriver $DriverMode
+            Get-SeleniumModule
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
+                'Serial'                = $Serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
             Remove-Module Selenium -Verbose:$false
             return $warObj
@@ -117,32 +107,32 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
         
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $serialnumber
+                'Serial'                = $serialnumber
                 'Warranty Product name' = $($table.'Model Name')
-                'StartDate' = $null
-                'EndDate' = $warEndDate
-                'Warranty Status' = $warrantystatus
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $null
+                'EndDate'               = $warEndDate
+                'Warranty Status'       = $warrantystatus
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
         } else {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
+                'Serial'                = $Serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
         } 
     return $WarObj

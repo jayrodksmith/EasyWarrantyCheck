@@ -25,26 +25,8 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $false)]
         [String]$SystemSKU
     )
-        Get-WebDriver -WebDriver $Seleniumdrivermode
-        Get-SeleniumModule
-        if ($Seleniumdrivermode -eq "Chrome" ){
-            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Google Chrome"
-        }
-        if ($Seleniumdrivermode -eq "Edge" ){
-            $browserinstalled = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
-        }
-    # Start a new browser session with headless mode
-    try {
-        $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
-    }
-    catch {
-        if ($PSCmdlet.ParameterSetName -eq 'Default') {
-            Write-Verbose $_.Exception.Message
-            Write-Host "###########################"
-            Write-Host "WARNING"
-            Write-Host "$($browserinstalled.software) not detected"
-            Write-Host "This manufacturer currently requires $($browserinstalled.software) installed to check expiry"
-            Write-Host "###########################"
+
+        if ($browsersupport -eq $false){
             Write-Host "Estimating Details from Registry"
             try {
                 $regPath = "HKLM:\SOFTWARE\WOW6432Node\HP\HPActiveSupport\HPSF\Warranty"
@@ -82,10 +64,27 @@ function Get-WarrantyHP {
                 return $warObj
             }
         }
-        else {
-            Write-Error "Google Chrome not detected"
+        # Start a new browser session with headless mode
+        try{
+            Get-WebDriver -WebDriver $DriverMode
+            Get-SeleniumModule
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
+        }catch{
+            Write-Verbose $_.Exception.Message
+            $WarObj = [PSCustomObject]@{
+                'Serial' = $Serial
+                'Warranty Product name' = $null
+                'StartDate' = $null
+                'EndDate' = $null
+                'Warranty Status' = 'Could not get warranty information'
+                'Client' = $null
+                'Product Image' = $null
+                'Warranty URL' = $null
+            }
+            Remove-Module Selenium -Verbose:$false
+            return $warObj
         }
-    }
+
     # Navigate to the warranty check URL
     Write-Host "Checking HP website for serial : $Serial"
     $driver.Navigate().GoToUrl("https://support.hp.com/au-en/check-warranty")
@@ -204,7 +203,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+    Stop-SeleniumModule -WebDriver $DriverMode
 
     if ($endDateText) {
         $warfirst = $startDateText

@@ -28,24 +28,19 @@ foreach ($path in $registryPaths) {
         $version = $installed.DisplayVersion
         Write-Verbose "$SoftwareName version $version is installed."
         $result = [PSCustomObject]@{
-            Software = $SoftwareName 
-            Installed = $true
-            Version = $version
+            Software        = $SoftwareName 
+            Installed       = $true
+            Version         = $version
         }
         return $result
     }
 }
 # If the software was not found in any location
-Write-Host "###########################"
-Write-Host "WARNING"
-Write-Host "$SoftwareName not detected"
-Write-Host "This manufacturer currently requires $SoftwareName installed to check expiry"
-Write-Host "###########################"
 Write-Verbose "$SoftwareName is not installed."
 $result = [PSCustomObject]@{
-    Software = $SoftwareName 
-    Installed = $false
-    Version = $null
+    Software            = $SoftwareName 
+    Installed           = $false
+    Version             = $null
 }
 return $result
 }
