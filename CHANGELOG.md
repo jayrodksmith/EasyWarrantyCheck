@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+# [1.0.5] - 14-03-2024
+
+### Added
+
+- Failover support from Chrome to Edge
+- Failover support from Edge to Chrome
+- Logged in user detection from Edge support
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Cleanup of some formatting
+
 # [1.0.4] - 13-03-2024
 
 ### Added

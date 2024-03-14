@@ -92,7 +92,7 @@ function Get-Warranty {
         Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
     }
     if ($Seleniumdrivermode) {
-        Set-Variable Seleniumdrivermode -Value $Seleniumdrivermode -Scope Global -option ReadOnly -Force
+        Set-Variable Seleniumdrivermode -Value $Seleniumdrivermode -Scope Global -Force
     }
     if ($PSCmdlet.ParameterSetName -eq 'Default') {
         $machineinfo = Get-MachineInfo
@@ -113,7 +113,7 @@ function Get-Warranty {
         $mfg = $Manufacturer
         $global:ServerMode = $true
     }
-        
+    
     $Notsupported = $false
     switch -Wildcard ($mfg) {
         "TERRA" {

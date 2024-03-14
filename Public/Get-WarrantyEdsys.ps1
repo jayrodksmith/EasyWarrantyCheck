@@ -122,27 +122,27 @@ function Get-WarrantyEdsys {
         }
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
-                'Invoice' = $($table.'Invoice')
+                'Serial'                = $Serial
+                'Invoice'               = $($table.'Invoice')
                 'Warranty Product name' = $($table.'Product Name')
-                'StartDate' = $warfirst
-                'EndDate' = $warEndDate
-                'Warranty Status' = $warrantystatus
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $warfirst
+                'EndDate'               = $warEndDate
+                'Warranty Status'       = $warrantystatus
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
         } else {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
-                'Invoice' = $null
+                'Serial'                = $Serial
+                'Invoice'               = $null
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
         }
     return $WarObj

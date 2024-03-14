@@ -52,25 +52,25 @@ function Get-WarrantyLenovo {
             $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
             $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End)
             $WarObj = [PSCustomObject]@{
-                'Serial' = $jsonWarranties.Serial
+                'Serial'                = $jsonWarranties.Serial
                 'Warranty Product name' = $jsonWarranties.ProductName
-                'StartDate' = $warfirst.Start
-                'EndDate' = $warlatest.End
-                'Warranty Status' = $warrantystatus
-                'Client' = $null
-                'Product Image' = $jsonWarranties.ProductImage
-                'Warranty URL' = $jsonWarranties.WarrantyUpgradeURLInfo.WarrantyURL
+                'StartDate'             = $warfirst.Start
+                'EndDate'               = $warlatest.End
+                'Warranty Status'       = $warrantystatus
+                'Client'                = $null
+                'Product Image'         = $jsonWarranties.ProductImage
+                'Warranty URL'          = $jsonWarranties.WarrantyUpgradeURLInfo.WarrantyURL
             }
         } else {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
+                'Serial'                = $Serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
+                'Client'                = $null
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
         } 
     return $WarObj
