@@ -2186,24 +2186,28 @@ function Test-BrowserSupport {
         # Check if Edge can be used
         if($edge.installed -eq $true) {
             if (($loggedInUsers = Get-LoggedInUser) -eq $false) {
-                Write-Host "No user logged in cannot run Edge without user logged in"
+                Write-Verbose "No user logged in cannot run Edge without user logged in"
                 $edgesupport = $false
             } else{
                 if($systemcontext -eq $true) {
                     $edgesupport = $true
                 } else {
-                    Write-Host "Script not running system context cannot run Edge without system context"
+                    Write-Verbose "Script not running system context cannot run Edge without system context"
                     $edgesupport = $false
                 }
                 
             }
+        } else {
+            $edgesupport = $false
         }
 
     if ($Browser -eq "Edge") {
         if($edgesupport -eq $true){
             return $true
         } else {
-            Write-Host "Microsoft Edge not installed, trying Chrome support"
+            if($systemcontext -eq $false) {Write-Host "Script not running system context cannot run Edge without system context"}
+            if($edge.installed -eq $false) {Write-Host "Microsoft Edge not installed"}
+            Write-Host "Microsoft Edge not supported, trying Chrome support"
             if($chrome.installed -eq $true) {
                 Write-Host "Defaulting to Chrome support"
                 Set-Variable Seleniumdrivermode -Value "Chrome" -Scope Global -Force
