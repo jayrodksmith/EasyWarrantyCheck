@@ -92,7 +92,8 @@ function Get-Warranty {
         Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
     }
     if ($Seleniumdrivermode) {
-        Set-Variable Seleniumdrivermode -Value $Seleniumdrivermode -Scope Global -Force
+        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
+        if ($browsersupport -eq $false) {Set-Variable Browsersupport -Value $false -Scope Global -option ReadOnly -Force}
     }
     if ($PSCmdlet.ParameterSetName -eq 'Default') {
         $machineinfo = Get-MachineInfo
@@ -234,9 +235,6 @@ function Get-WarrantyAsus {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
 
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
-
         if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
                 'Serial'                = $Serial
@@ -253,9 +251,9 @@ function Get-WarrantyAsus {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -320,7 +318,7 @@ function Get-WarrantyAsus {
         }
         
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
         $datestring = $($table.'Warranty Expiry')
         $warEndDate = [DateTime]::ParseExact($dateString, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
@@ -376,8 +374,6 @@ function Get-WarrantyDell {
             [Parameter(Mandatory = $false)]
             [String]$DateFormat = 'dd-MM-yyyy'
         )
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
 
         if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
@@ -395,9 +391,9 @@ function Get-WarrantyDell {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -467,7 +463,7 @@ function Get-WarrantyDell {
             Write-Host "No matching text found for warranty end date "
         }
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
 
         if ($warrantystatus) {
             $WarObj = [PSCustomObject]@{
@@ -673,9 +669,6 @@ function Get-WarrantyHP {
         [String]$SystemSKU
     )
 
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
-
         if ($browsersupport -eq $false){
             Write-Host "Estimating Details from Registry"
             try {
@@ -716,9 +709,9 @@ function Get-WarrantyHP {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -853,7 +846,7 @@ function Get-WarrantyHP {
         $product = $h2Element.Text
     }
     # Close the browser
-    Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+    Stop-SeleniumModule -WebDriver $DriverMode
 
     if ($endDateText) {
         $warfirst = $startDateText
@@ -1068,9 +1061,6 @@ function Get-WarrantyTerra {
             [String]$DateFormat = 'dd-MM-yyyy'
         )
 
-        # Check Browser support and download required modules
-        $browsersupport = Test-BrowserSupport -Browser $Seleniumdrivermode
-
         if ($browsersupport -eq $false){
             $WarObj = [PSCustomObject]@{
                 'Serial'                = $Serial
@@ -1087,9 +1077,9 @@ function Get-WarrantyTerra {
         }
         # Start a new browser session with headless mode
         try{
-            Get-WebDriver -WebDriver $Seleniumdrivermode
+            Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $Seleniumdrivermode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -1141,7 +1131,7 @@ function Get-WarrantyTerra {
         }
 
         # Close the browser
-        Stop-SeleniumModule -WebDriver $Seleniumdrivermode
+        Stop-SeleniumModule -WebDriver $DriverMode
         $warEndDate = $($table1.'Warranty ending date')
         $warEndDate = [DateTime]::ParseExact($warEndDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
@@ -2158,7 +2148,7 @@ function Test-BrowserSupport {
     [CmdletBinding(SupportsShouldProcess)]
     param(
 		[Parameter(Mandatory = $false)]
-		[String]$Browser= $Seleniumdrivermode
+		[String]$Browser = "Chrome"
 	)
     # Check if running in system context
     function Test-SystemContext {
@@ -2203,6 +2193,7 @@ function Test-BrowserSupport {
 
     if ($Browser -eq "Edge") {
         if($edgesupport -eq $true){
+            Set-Variable DriverMode -Value "Edge" -Scope Global -option ReadOnly -Force
             return $true
         } else {
             if($systemcontext -eq $false) {Write-Host "Script not running system context cannot run Edge without system context"}
@@ -2210,7 +2201,7 @@ function Test-BrowserSupport {
             Write-Host "Microsoft Edge not supported, trying Chrome support"
             if($chrome.installed -eq $true) {
                 Write-Host "Defaulting to Chrome support"
-                Set-Variable Seleniumdrivermode -Value "Chrome" -Scope Global -Force
+                Set-Variable DriverMode -Value "Chrome" -Scope Global -option ReadOnly -Force
                 return $true
             } else {
                 Write-Host "Google Chrome not installed"
@@ -2221,11 +2212,12 @@ function Test-BrowserSupport {
 
     if ($Browser -eq "Chrome"){
         if($chrome.installed -eq $true) {
+            Set-Variable DriverMode -Value "Chrome" -Scope Global -option ReadOnly -Force
             return $true
         } else {
             Write-Host "Google Chrome not installed trying Edge support"
             if($edgesupport -eq $true){
-                Set-Variable Seleniumdrivermode -Value "Edge" -Scope Global -Force
+                Set-Variable DriverMode -Value "Edge" -Scope Global -option ReadOnly -Force
                 return $true
             } else {
                 if (($loggedInUsers = Get-LoggedInUser) -eq $false) {
