@@ -2149,6 +2149,7 @@ function Test-BrowserSupport {
     
         .EXAMPLE
         Test-BrowserSupport -Browser "Chrome"
+        Test-BrowserSupport -Browser "Edge"
 
         .PARAMETER Browser
         What browser to check if we can run
@@ -2159,18 +2160,42 @@ function Test-BrowserSupport {
 		[Parameter(Mandatory = $false)]
 		[String]$Browser= $Seleniumdrivermode
 	)
+    # Check if running in system context
+    function Test-SystemContext {
+        $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+        $currentUserSid = $currentUser.User.Value
     
+        # The SID for the SYSTEM account
+        $systemSid = "S-1-5-18"
+    
+        if ($currentUserSid -eq $systemSid) {
+            Write-Verbose "Running in SYSTEM context."
+            return $true
+        } else {
+            Write-Verbose "Not running in SYSTEM context."
+            return $false
+        }
+    }
+
     # Check if Edge and Chrome Installed
         $chrome = Test-SoftwareInstalled -SoftwareName "Google Chrome"
         $edge = Test-SoftwareInstalled -SoftwareName "Microsoft Edge"
         $loggedInUsers = Get-LoggedInUser
+        $systemcontext = Test-SystemContext
+
         # Check if Edge can be used
         if($edge.installed -eq $true) {
             if (($loggedInUsers = Get-LoggedInUser) -eq $false) {
                 Write-Host "No user logged in cannot run Edge without user logged in"
                 $edgesupport = $false
             } else{
-                $edgesupport = $true
+                if($systemcontext -eq $true) {
+                    $edgesupport = $true
+                } else {
+                    Write-Host "Script not running system context cannot run Edge without system context"
+                    $edgesupport = $false
+                }
+                
             }
         }
 
