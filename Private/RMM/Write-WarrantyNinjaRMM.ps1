@@ -35,6 +35,16 @@ function Write-WarrantyNinjaRMM {
         }
         $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
         if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
+            # Set Age of device if start date exists
+            if($ninjadeviceage){
+                $calculatedageofdevice = Get-AgeOfDevice
+                if ($calculatedageofdevice -ne $false){
+                    $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
+                    if($Currentdeviceage -ne $calculatedageofdevice){
+                        Ninja-Property-Set $ninjadeviceage $calculatedageofdevice
+                    }
+                }
+            }
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
@@ -59,6 +69,17 @@ function Write-WarrantyNinjaRMM {
             if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
             if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
             if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
+
+            # Set Age of device if start date exists
+            if($ninjadeviceage){
+                $calculatedageofdevice = Get-AgeOfDevice
+                if ($calculatedageofdevice -ne $false){
+                    $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
+                    if($Currentdeviceage -ne $calculatedageofdevice){
+                        Ninja-Property-Set $ninjadeviceage $calculatedageofdevice
+                    }
+                }
+            }
             return "Warranty details saved to NinjaRMM"
         }
 }

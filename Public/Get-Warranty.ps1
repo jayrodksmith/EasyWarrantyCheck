@@ -77,6 +77,10 @@ function Get-Warranty {
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [String]$ninjainvoicenumber = 'invoicenumber',
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
+        [String]$ninjadeviceage = 'deviceage',
+
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [String]$HpSystemSKU
             
@@ -87,6 +91,7 @@ function Get-Warranty {
         Set-Variable ninjawarrantyexpiry -Value $ninjawarrantyexpiry -Scope Global -option ReadOnly -Force
         Set-Variable ninjawarrantystatus -Value $ninjawarrantystatus -Scope Global -option ReadOnly -Force
         Set-Variable ninjainvoicenumber -Value $ninjainvoicenumber -Scope Global -option ReadOnly -Force
+        Set-Variable ninjadeviceage -Value $ninjadeviceage -Scope Global -option ReadOnly -Force
     }
     if ($ForceUpdate -eq $true) {
         Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
