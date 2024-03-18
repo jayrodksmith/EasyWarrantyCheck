@@ -77,6 +77,10 @@ function Get-Warranty {
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [String]$ninjainvoicenumber = 'invoicenumber',
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
+        [String]$ninjadeviceage = 'deviceage',
+
         [Parameter(Mandatory = $false, ParameterSetName = 'CentralNinja')]
         [String]$HpSystemSKU
             
@@ -87,6 +91,7 @@ function Get-Warranty {
         Set-Variable ninjawarrantyexpiry -Value $ninjawarrantyexpiry -Scope Global -option ReadOnly -Force
         Set-Variable ninjawarrantystatus -Value $ninjawarrantystatus -Scope Global -option ReadOnly -Force
         Set-Variable ninjainvoicenumber -Value $ninjainvoicenumber -Scope Global -option ReadOnly -Force
+        Set-Variable ninjadeviceage -Value $ninjadeviceage -Scope Global -option ReadOnly -Force
     }
     if ($ForceUpdate -eq $true) {
         Set-Variable ForceUpdate -Value $ForceUpdate -Scope Global -option ReadOnly -Force
@@ -1657,6 +1662,16 @@ function Write-WarrantyNinjaRMM {
         }
         $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
         if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
+            # Set Age of device if start date exists
+            if($ninjadeviceage){
+                $calculatedageofdevice = Get-AgeOfDevice
+                if ($calculatedageofdevice -ne $false){
+                    $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
+                    if($Currentdeviceage -ne $calculatedageofdevice){
+                        Ninja-Property-Set $ninjadeviceage $calculatedageofdevice
+                    }
+                }
+            }
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
@@ -1681,6 +1696,17 @@ function Write-WarrantyNinjaRMM {
             if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
             if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
             if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
+
+            # Set Age of device if start date exists
+            if($ninjadeviceage){
+                $calculatedageofdevice = Get-AgeOfDevice
+                if ($calculatedageofdevice -ne $false){
+                    $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
+                    if($Currentdeviceage -ne $calculatedageofdevice){
+                        Ninja-Property-Set $ninjadeviceage $calculatedageofdevice
+                    }
+                }
+            }
             return "Warranty details saved to NinjaRMM"
         }
 }
@@ -1708,6 +1734,56 @@ function Convert-EpochToDateTime {
 
     # Return the readable date
     return $dateTime.ToString($DateFormat)
+}
+
+function Get-AgeOfDevice {
+    <#
+        .SYNOPSIS
+        Function to Get estimated age of the device
+    
+        .DESCRIPTION
+        This function will Get estimated age of the device
+
+        .EXAMPLE
+        Get-AgeOfDevice -StartDate ""
+
+        .PARAMETER StartDate
+        StartDate, must be unix format
+    
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        $StartDate
+    )
+
+# Assuming $startDate contains the UNIX timestamp as previously mentioned
+if($startdate -eq $null){
+    $startdate = (Ninja-Property-Get $ninjawarrantystart)
+}
+$startDateUnixTimestamp = $StartDate
+    if ($startDateUnixTimestamp) {
+        # Convert the UNIX timestamp to a DateTime object
+        # PowerShell treats UNIX timestamp in seconds, and it needs to be converted to DateTime from the epoch (1970-01-01)
+        $startDate = [DateTimeOffset]::FromUnixTimeSeconds($startDateUnixTimestamp).DateTime
+
+        # Getting today's date
+        $endDate = Get-Date
+
+        # Calculating the difference between the two dates
+        $timeSpan = $endDate - $startDate
+
+        # Calculating the total number of years as a decimal
+        $yearsDecimal = $timeSpan.TotalDays / 365.25 # Including leap years in the calculation
+
+        # Rounding to two decimal places for a more precise years figure
+        $yearsRounded = [math]::Round($yearsDecimal, 2)
+
+        # Optionally, you might want to output the years figure to the console for verification
+        Write-Verbose "Device Age: $yearsRounded years"
+        return $yearsRounded
+    } else {
+        return $false
+    }
 }
 
 function Get-RunAsUserModule {
