@@ -101,6 +101,7 @@ function Get-WebDriver {
             Write-Verbose $_.Exception.Message
         }
         # Expand archive and replace the old file
+        Get-Process -Name 'chromedriver' | Stop-process -Force | Out-Null
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
         Remove-Item "$($webDriversPath)\chromedriver.exe" -Force | Out-Null
         Move-Item      "$webDriversPath\tempchrome\chromedriver-win64\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
@@ -147,6 +148,7 @@ function Get-WebDriver {
             }
         
             # epand archive and replace the old file
+            Get-Process -Name 'msedgedriver' | Stop-process -Force | Out-Null
             Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force
             Remove-Item "$($webDriversPath)\msedgedriver.exe" -Force | Out-Null
             Move-Item      "$webDriversPath\tempedge\msedgedriver.exe" -Destination "$($webDriversPath)\msedgedriver.exe" -Force
