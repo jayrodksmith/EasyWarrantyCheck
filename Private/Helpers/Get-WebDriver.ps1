@@ -105,7 +105,7 @@ function Get-WebDriver {
             Get-Process -Name 'chromedriver' | Stop-Process -Force
         }
         Expand-Archive "$webDriversPath\chromeNewDriver.zip" -DestinationPath "$webDriversPath\tempchrome" -Force
-        Remove-Item "$($webDriversPath)\chromedriver.exe" -Force | Out-Null
+        try {Remove-Item "$($webDriversPath)\chromedriver.exe" -Force -ErrorAction SilentlyContinue | Out-Null}catch{}
         Move-Item      "$webDriversPath\tempchrome\chromedriver-win64\chromedriver.exe" -Destination "$($webDriversPath)\chromedriver.exe" -Force
 
         # clean-up
@@ -154,7 +154,7 @@ function Get-WebDriver {
                 Get-Process -Name 'msedgedriver' | Stop-Process -Force
             }
             Expand-Archive "$webDriversPath\edgeNewDriver.zip" -DestinationPath "$webDriversPath\tempedge" -Force
-            Remove-Item "$($webDriversPath)\msedgedriver.exe" -Force | Out-Null
+            try {Remove-Item "$($webDriversPath)\msedgedriver.exe" -Force -ErrorAction SilentlyContinue | Out-Null}catch{}
             Move-Item      "$webDriversPath\tempedge\msedgedriver.exe" -Destination "$($webDriversPath)\msedgedriver.exe" -Force
         
             # clean-up

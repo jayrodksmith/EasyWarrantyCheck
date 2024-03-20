@@ -68,7 +68,7 @@ function Get-WarrantyHP {
         try{
             Get-WebDriver -WebDriver $DriverMode
             Get-SeleniumModule
-            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $true
+            $driver = Start-SeleniumModule -WebDriver $DriverMode -Headless $false
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
@@ -84,15 +84,40 @@ function Get-WarrantyHP {
             Remove-Module Selenium -Verbose:$false
             return $warObj
         }
-
+        function Set-Iframe {
+            # Try Click Iframe if exist
+            try{
+                $driver.FindElementById("kampyleForm32059")
+                $iframe = $driver.FindElementById("kampyleForm32059")
+                $driver.SwitchTo().Frame($iframe)
+                $driver.FindElementByTagName("body").SendKeys([OpenQA.Selenium.Keys]::Escape)
+                $driver.SwitchTo().DefaultContent()
+            } catch {
+        
+            }
+        }
+        function Set-Privacy {
+            # Try Click Iframe if exist
+            try{
+                $driver.FindElementById("onetrust-accept-btn-handler")
+                $privacyButton.Click()
+            } catch {
+        
+            }
+        }
     # Navigate to the warranty check URL
     Write-Host "Checking HP website for serial : $Serial"
     $driver.Navigate().GoToUrl("https://support.hp.com/au-en/check-warranty")
     # Locate and input the serial number into the form
+    Set-Privacy
+    Set-Iframe
     $serialnumber = $Serial
     $inputField = $driver.FindElementById("inputtextpfinder")
+    Set-Privacy
+    Set-Iframe
     $inputField.SendKeys($serialnumber)
-    # Find and click the submit button
+    Set-Iframe
+    Set-Privacy
     $submitButton = $driver.FindElementById("FindMyProduct")
     $submitButton.Click()
     # Wait for the page to load (you might need to adjust the sleep time)
@@ -111,8 +136,12 @@ function Get-WarrantyHP {
         Write-Host "Using SystemSKU input"
         Write-Verbose "Need Product ID"
         $productField = $driver.FindElementById("product-number inputtextPN")
+        Set-Privacy
+        Set-Iframe
         $productField.SendKeys($SystemSKU)
         $submitButton = $driver.FindElementById("FindMyProductNumber")
+        Set-Privacy
+        Set-Iframe
         $submitButton.Click()
         Write-Host "Waiting for results......."
         Start-Sleep -Seconds 15
@@ -131,8 +160,12 @@ function Get-WarrantyHP {
             $systemSKU = Get-ItemProperty -Path $regPath -Name "SystemSKU" -ErrorAction Stop | Select-Object -ExpandProperty "SystemSKU"
             Write-Host "SystemSKU value: $systemSKU"
             $productField = $driver.FindElementById("product-number inputtextPN")
+            Set-Privacy
+            Set-Iframe
             $productField.SendKeys($systemSKU)
             $submitButton = $driver.FindElementById("FindMyProductNumber")
+            Set-Privacy
+            Set-Iframe
             $submitButton.Click()
             Write-Host "Waiting for results......."
             Start-Sleep -Seconds 15
@@ -146,6 +179,8 @@ function Get-WarrantyHP {
     else {
         # Continue   
     }
+    Set-Privacy
+    Set-Iframe
     # Find the element containing the 'Start date' text
     try {
         $startDateElement = $driver.FindElementByXPath("//div[contains(@class,'info-item')]//div[contains(@class,'label') and contains(text(), 'Start date')]/following-sibling::div[contains(@class,'text')]")
