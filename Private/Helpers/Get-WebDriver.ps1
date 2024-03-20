@@ -102,6 +102,10 @@ function Get-WebDriver {
         if ($versionLink.Count -gt 1){
             $versionLink = $versionLink[0]
         }
+        if (!$versionLink){
+            # In case of no matching webdriver download the first result
+            $versionLink = $chromeDriverAvailableVersions | Select-Object -first 1
+        }
         $downloadLink = $versionLink
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
