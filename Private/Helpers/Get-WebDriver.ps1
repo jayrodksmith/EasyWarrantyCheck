@@ -22,7 +22,7 @@ function Get-WebDriver {
         $webDriversPath      = "C:\temp\EasyWarrantyCheck\WebDrivers",                                  # local path for all web drivers (assuming that both are in the same location)
         $edgeDriverPath      = "$($webDriversPath)\msedgedriver.exe",                                   # direct MS Edge driver path
         $chromeDriverPath    = "$($webDriversPath)\chromedriver.exe",                                   # direct Chrome driver path
-        $chromeDriverWebsite = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json",                           # Chrome dooesn't allow to query the version from downloads page; instead available pages can be found here
+        $chromeDriverWebsite = "https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json",
         $edgeDriverWebsite   = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"  # URL to find and download relevant MS Edge Driver version
     )
 
@@ -91,21 +91,9 @@ function Get-WebDriver {
         if (Confirm-NeedForUpdate $chromeVersion $chromeDriverVersion){
         $jsonString = Invoke-RestMethod -Uri $chromeDriverWebsite
         # Find the URL for chromedriver for win64 platform in the stable channel
-        $webdriverurl = $jsonString.channels.Stable.downloads.chromedriver | Where-Object { $_.platform -eq "win64" } | Select-Object -ExpandProperty url
-        $chromeDriverAvailableVersions = $webdriverurl
-        $versionLink = $chromeDriverAvailableVersions | where {$_ -like "*$chromeVersion/*"}
-        if (!$versionLink){
-            $browserMajorVersion = $chromeVersion.Substring(0, $chromeVersion.IndexOf("."))
-            $versionLink         = $chromeDriverAvailableVersions | where {$_ -like "*$browserMajorVersion.*"}
-        }
-            # in case of multiple links, take the first only
-        if ($versionLink.Count -gt 1){
-            $versionLink = $versionLink[0]
-        }
-        if (!$versionLink){
-            # In case of no matching webdriver download the first result
-            $versionLink = $chromeDriverAvailableVersions | Select-Object -first 1
-        }
+        $browserMajorVersion = $chromeVersion.Substring(0,10)
+        $jsonString = $jsonString.builds
+        $versionLink = $jsonString.$browserMajorVersion.downloads.chromedriver | Where-Object { $_.platform -eq "win64" } | Select-Object -ExpandProperty url
         $downloadLink = $versionLink
         try {
             Invoke-WebRequest $downloadLink -OutFile "$webDriversPath\chromeNewDriver.zip"
