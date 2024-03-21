@@ -738,9 +738,9 @@ function Get-WarrantyHP {
             try{
                 $driver.FindElementById("kampyleForm32059")
                 $iframe = $driver.FindElementById("kampyleForm32059")
-                $driver.SwitchTo().Frame($iframe)
+                $driver.SwitchTo().Frame($iframe) | Out-Null
                 $driver.FindElementByTagName("body").SendKeys([OpenQA.Selenium.Keys]::Escape)
-                $driver.SwitchTo().DefaultContent()
+                $driver.SwitchTo().DefaultContent() | Out-Null
             } catch {
         
             }
@@ -1718,17 +1718,32 @@ function Write-WarrantyNinjaRMM {
                     }
                     $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
                 }
-            if($Warrantystartutc){Ninja-Property-Set $ninjawarrantystart $Warrantystartutc}
-            if($WarrantyExpiryutc){Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc}
-            if($WarrantyStatus){Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus}
-            if($Invoicenumber){Ninja-Property-Set $ninjainvoicenumber $Invoicenumber}
+            Write-Verbose "Checking for warranty values to write to NinjaRMM" 
+            if($Warrantystartutc){
+                Write-Verbose "Will try write Warranty Start Value : $Warrantystartutc"
+                Ninja-Property-Set $ninjawarrantystart $Warrantystartutc
+            }
+            if($WarrantyExpiryutc){
+                Write-Verbose "Will try write Warranty Expiry Value : $WarrantyExpiryutc"
+                Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc
+            }
+            if($WarrantyStatus){
+                Write-Verbose "Will try write Warranty Status Value : $WarrantyStatus"
+                Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus
+            }
+            if($Invoicenumber){
+                Write-Verbose "Will try write Warranty Invoice Value : $Invoicenumber"
+                Ninja-Property-Set $ninjainvoicenumber $Invoicenumber
+            }
 
             # Set Age of device if start date exists
+            Write-Verbose "Checking for Device Age details to write to NinjaRMM" 
             if($ninjadeviceage){
                 $calculatedageofdevice = Get-AgeOfDevice
                 if ($calculatedageofdevice -ne $false){
                     $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
                     if($Currentdeviceage -ne $calculatedageofdevice){
+                        Write-Verbose "Will try write Warranty Expiry Value : $calculatedageofdevice" 
                         Ninja-Property-Set $ninjadeviceage $calculatedageofdevice
                     }
                 }
