@@ -86,10 +86,12 @@ function Get-Warranty {
             
     )
     # Print Current Version
-    Write-Host "EasyWarrantyCheck Version : 1.0.7"
+    Write-Host "EasyWarrantyCheck Version : 1.0.8"
     # Import Ninja Powershell Module
     Write-Host "Importing Ninja Powershell module"
-    Import-Module NJCliPSh -ErrorAction SilentlyContinue -verbose:$false | Out-Null
+    Import-Module NJCliPSh -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+    # Set localization
+    $DateFormat = (Get-Culture).DateTimeFormat.ShortDatePattern
     # Set Global Variables
     if ($RMM -eq 'NinjaRMM') {
         Set-Variable ninjawarrantystart -Value $ninjawarrantystart -Scope Global -option ReadOnly -Force
