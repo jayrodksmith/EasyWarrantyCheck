@@ -1729,16 +1729,12 @@ function Write-WarrantyNinjaRMM {
         } else {
                 if($Warrantystart){
                     Write-Verbose "Warrantystart: $Warrantystart"
-                    $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
-                    Write-Verbose "Warrantystart Converted: $Warrantystart"
                     # Convert to UTC
                     $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
                     Write-Verbose "Warrantystart UTC: $Warrantystartutc"
                 }
                 if($WarrantyExpiry){
                     Write-Verbose "WarrantyExpiry: $WarrantyExpiry"
-                    $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
-                    Write-Verbose "WarrantyExpiry Converted: $WarrantyExpiry"
                     # Convert to UTC
                     $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
                     Write-Verbose "WarrantyExpiry UTC: $WarrantyExpiryutc"
