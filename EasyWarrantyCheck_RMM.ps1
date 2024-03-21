@@ -752,24 +752,20 @@ function Get-WarrantyHP {
             }
         }
         function Set-Privacy {
-            # Try Click Iframe if exist
-            try{
-                $privacyButton = $driver.FindElementById("onetrust-accept-btn-handler")
+            do {
+                try { $privacyButton = $driver.FindElementById("onetrust-accept-btn-handler") } catch {}
+                if ($privacyButton.Text -eq "I ACCEPT") {
                 $privacyButton.Click()
-            } catch {
-        
-            }
+                Start-Sleep -Seconds 1
+                }
+            } until ($privacyButton.Text -ne "I ACCEPT")
         }
     # Navigate to the warranty check URL
     Write-Host "Checking HP website for serial : $Serial"
     $driver.Navigate().GoToUrl("https://support.hp.com/au-en/check-warranty")
-    # Locate and input the serial number into the form
-    Write-Verbose "Waiting for any popups"
-    Start-Sleep -Seconds 15
-    Write-Verbose "Tyring to get rid of popups"
+    Start-Sleep -Seconds 3
     Set-Privacy
-    Set-Iframe
-    Write-Verbose "Inputting serial info"
+    # Locate and input the serial number into the form
     $serialnumber = $Serial
     $inputField = $driver.FindElementById("inputtextpfinder")
     $inputField.SendKeys($serialnumber)
@@ -777,7 +773,7 @@ function Get-WarrantyHP {
     $submitButton.Click()
     # Wait for the page to load (you might need to adjust the sleep time)
     Write-Host "Waiting for results......."
-    Start-Sleep -Seconds 15
+    Start-Sleep -Seconds 12
     # Check if the error message exists
     try {
         $errorMsgElement = $driver.FindElementByClassName("errorTxt")
@@ -795,7 +791,7 @@ function Get-WarrantyHP {
         $submitButton = $driver.FindElementById("FindMyProductNumber")
         $submitButton.Click()
         Write-Host "Waiting for results......."
-        Start-Sleep -Seconds 15
+        Start-Sleep -Seconds 12
     }
     elseif ($null -ne $errorMsgElement -and $null -ne $SystemSKU -and $global:ServerMode -eq $true) {
         Write-Host "SystemSKU not provided"
@@ -815,7 +811,7 @@ function Get-WarrantyHP {
             $submitButton = $driver.FindElementById("FindMyProductNumber")
             $submitButton.Click()
             Write-Host "Waiting for results......."
-            Start-Sleep -Seconds 15
+            Start-Sleep -Seconds 12
         }
         catch {
             Write-Host "SystemSKU key does not exist in the specified registry path."
