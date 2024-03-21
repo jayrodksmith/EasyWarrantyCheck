@@ -3,7 +3,7 @@ function  Get-Warrantyinfo {
     Param(
         [string]$serialnumber,
         [String]$client,
-        [String]$DateFormat = 'dd-MM-yyyy',
+        [String]$DateFormat = $DateFormatGlobal,
         [String]$vendor
     )
     if ($LogActions) { add-content -path $LogFile -Value "Starting lookup for $($DeviceSerial),$($Client)" -force }

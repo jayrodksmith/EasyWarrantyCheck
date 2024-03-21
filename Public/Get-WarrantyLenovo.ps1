@@ -21,7 +21,7 @@ function Get-WarrantyLenovo {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
@@ -49,8 +49,8 @@ function Get-WarrantyLenovo {
             }else{
                 $warrantystatus = "Expired"
             }
-            $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
-            $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End)
+            $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start) -DateFormat $DateFormat
+            $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End) -DateFormat $DateFormat
             $WarObj = [PSCustomObject]@{
                 'Serial'                = $jsonWarranties.Serial
                 'Warranty Product name' = $jsonWarranties.ProductName

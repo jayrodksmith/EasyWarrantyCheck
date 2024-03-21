@@ -21,7 +21,7 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
 
         if ($browsersupport -eq $false){

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+# [1.0.9] - 21-03-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Lenovo Date Time bug
+
 # [1.0.8] - 21-03-2024
 
 ### Added

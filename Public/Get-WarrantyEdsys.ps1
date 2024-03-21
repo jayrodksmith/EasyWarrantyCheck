@@ -21,7 +21,7 @@ function Get-WarrantyEdsys {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"

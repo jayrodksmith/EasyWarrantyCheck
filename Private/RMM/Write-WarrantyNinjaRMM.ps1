@@ -27,7 +27,7 @@ function Write-WarrantyNinjaRMM {
             [Parameter(Mandatory = $false)]
             [String]$Invoicenumber= '',
             [Parameter(Mandatory = $false)]
-            [String]$dateformat = 'dd-MM-yyyy'
+            [String]$dateformat = $DateFormatGlobal
         )
         if (-not (Get-Command -Name "Ninja-Property-Set" -ErrorAction SilentlyContinue)) {
             $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."

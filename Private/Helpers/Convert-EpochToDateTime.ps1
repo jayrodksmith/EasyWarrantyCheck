@@ -13,7 +13,7 @@ function Convert-EpochToDateTime {
     param(
         [long]$EpochTimestamp,
         [Parameter(Mandatory = $false)]
-        [String]$DateFormat = 'dd-MM-yyyy'
+        [String]$DateFormat = $DateFormatGlobal
     )
 
     # Convert to DateTime

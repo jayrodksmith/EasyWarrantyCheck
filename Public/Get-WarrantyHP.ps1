@@ -21,7 +21,7 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $true)]
         [String]$Serial,
         [Parameter(Mandatory = $false)]
-        [String]$DateFormat = 'dd-MM-yyyy',
+        [String]$DateFormat = $DateFormatGlobal,
         [Parameter(Mandatory = $false)]
         [String]$SystemSKU
     )
