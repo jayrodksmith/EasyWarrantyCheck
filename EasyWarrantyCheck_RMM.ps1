@@ -85,6 +85,8 @@ function Get-Warranty {
         [String]$HpSystemSKU
             
     )
+    # Print Current Version
+    Write-Host "EasyWarrantyCheck Version : 1.0.6"
     # Set Global Variables
     if ($RMM -eq 'NinjaRMM') {
         Set-Variable ninjawarrantystart -Value $ninjawarrantystart -Scope Global -option ReadOnly -Force
