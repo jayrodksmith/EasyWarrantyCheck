@@ -90,9 +90,9 @@ function Get-WarrantyHP {
             try{
                 $driver.FindElementById("kampyleForm32059")
                 $iframe = $driver.FindElementById("kampyleForm32059")
-                $driver.SwitchTo().Frame($iframe) | Out-Null
+                $iframe2 = $driver.SwitchTo().Frame($iframe)
                 $driver.FindElementByTagName("body").SendKeys([OpenQA.Selenium.Keys]::Escape)
-                $driver.SwitchTo().DefaultContent() | Out-Null
+                $iframe3 = $driver.SwitchTo().DefaultContent()
             } catch {
         
             }
