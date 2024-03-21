@@ -1742,6 +1742,18 @@ function Write-WarrantyNinjaRMM {
                     Write-Verbose "WarrantyExpiry UTC: $WarrantyExpiryutc"
                 }
             Write-Verbose "Checking for warranty values to write to NinjaRMM" 
+            $NinjaWarrantyObj = [PSCustomObject]@{
+                'Ninja Warranty Start' = $ninjawarrantystart
+                'Ninja Warranty Expiry' = $ninjawarrantyexpiry
+                'Ninja Warranty Status' = $ninjawarrantystatus
+                'Ninja Invoicenumber' = $ninjainvoicenumber
+                'Ninja Device Age' = $ninjadeviceage
+            }
+            if ($VerbosePreference -eq 'Continue') {
+                Write-Verbose "NinjaRMM Custom Field Values" 
+                $NinjaWarrantyObj
+            }
+            
             if($Warrantystartutc){
                 Write-Verbose "Will try write Warranty Start Value : $Warrantystartutc"
                 Ninja-Property-Set $ninjawarrantystart $Warrantystartutc
@@ -1766,7 +1778,7 @@ function Write-WarrantyNinjaRMM {
                 if ($calculatedageofdevice -ne $false){
                     $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
                     if($Currentdeviceage -ne $calculatedageofdevice){
-                        Write-Verbose "Will try write Warranty Expiry Value : $calculatedageofdevice" 
+                        Write-Verbose "Will try write Device Age Value : $calculatedageofdevice" 
                         Ninja-Property-Set $ninjadeviceage $calculatedageofdevice
                     }
                 }
