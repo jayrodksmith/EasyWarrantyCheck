@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+# [1.0.6] - 21-03-2024
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Bug fixes for HP check
+
 # [1.0.5] - 14-03-2024
 
 ### Added
