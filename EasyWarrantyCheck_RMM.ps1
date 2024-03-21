@@ -86,12 +86,14 @@ function Get-Warranty {
             
     )
     # Print Current Version
-    Write-Host "EasyWarrantyCheck Version : 1.0.8"
+    Write-Host "EasyWarrantyCheck Version : 1.0.9"
     # Import Ninja Powershell Module
     Write-Host "Importing Ninja Powershell module"
     Import-Module NJCliPSh -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     # Set localization
     $DateFormat = (Get-Culture).DateTimeFormat.ShortDatePattern
+    $DateFormatGlobal = (Get-Culture).DateTimeFormat.ShortDatePattern
+    Set-Variable DateFormatGlobal -Value $DateFormatGlobal -Scope Global -option ReadOnly -Force
     # Set Global Variables
     if ($RMM -eq 'NinjaRMM') {
         Set-Variable ninjawarrantystart -Value $ninjawarrantystart -Scope Global -option ReadOnly -Force
@@ -244,7 +246,7 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
 
         if ($browsersupport -eq $false){
@@ -384,7 +386,7 @@ function Get-WarrantyDell {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
 
         if ($browsersupport -eq $false){
@@ -526,7 +528,7 @@ function Get-WarrantyEdsys {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"
@@ -676,7 +678,7 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $true)]
         [String]$Serial,
         [Parameter(Mandatory = $false)]
-        [String]$DateFormat = 'dd-MM-yyyy',
+        [String]$DateFormat = $DateFormatGlobal,
         [Parameter(Mandatory = $false)]
         [String]$SystemSKU
     )
@@ -938,7 +940,7 @@ function Get-WarrantyLenovo {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
@@ -966,8 +968,8 @@ function Get-WarrantyLenovo {
             }else{
                 $warrantystatus = "Expired"
             }
-            $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start)
-            $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End)
+            $warfirst.Start = Convert-EpochToDateTime -EpochTimestamp $($warfirst.Start) -DateFormat $DateFormat
+            $warlatest.End = Convert-EpochToDateTime -EpochTimestamp $($warlatest.End) -DateFormat $DateFormat
             $WarObj = [PSCustomObject]@{
                 'Serial'                = $jsonWarranties.Serial
                 'Warranty Product name' = $jsonWarranties.ProductName
@@ -1016,7 +1018,7 @@ function Get-WarrantyMicrosoft {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
         # Define the URL
         Write-Host "Checking Microsoft website for serial : $Serial"
@@ -1096,7 +1098,7 @@ function Get-WarrantyTerra {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
 
         if ($browsersupport -eq $false){
@@ -1234,7 +1236,7 @@ function Get-WarrantyToshiba {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = 'dd-MM-yyyy'
+            [String]$DateFormat = $DateFormatGlobal
         )
         # Define the URL
         Write-Host "Checking Toshiba website for serial : $Serial"
@@ -1543,7 +1545,7 @@ function  Get-Warrantyinfo {
     Param(
         [string]$serialnumber,
         [String]$client,
-        [String]$DateFormat = 'dd-MM-yyyy',
+        [String]$DateFormat = $DateFormatGlobal,
         [String]$vendor
     )
     if ($LogActions) { add-content -path $LogFile -Value "Starting lookup for $($DeviceSerial),$($Client)" -force }
@@ -1707,7 +1709,7 @@ function Write-WarrantyNinjaRMM {
             [Parameter(Mandatory = $false)]
             [String]$Invoicenumber= '',
             [Parameter(Mandatory = $false)]
-            [String]$dateformat = 'dd-MM-yyyy'
+            [String]$dateformat = $DateFormatGlobal
         )
         if (-not (Get-Command -Name "Ninja-Property-Set" -ErrorAction SilentlyContinue)) {
             $errorMessage = "Error: NinjaRMM module not found, not writing to NinjaRMM."
@@ -1788,7 +1790,7 @@ function Convert-EpochToDateTime {
     param(
         [long]$EpochTimestamp,
         [Parameter(Mandatory = $false)]
-        [String]$DateFormat = 'dd-MM-yyyy'
+        [String]$DateFormat = $DateFormatGlobal
     )
 
     # Convert to DateTime
