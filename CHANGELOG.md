@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+# [1.0.8] - 21-03-2024
+
+### Added
+
+### Changed
+
+- Date time now is static to machine localization
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Bug fixes
+
 # [1.0.6] - 21-03-2024
 
 ### Added
