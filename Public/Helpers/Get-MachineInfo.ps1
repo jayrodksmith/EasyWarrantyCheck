@@ -26,14 +26,14 @@ function Get-MachineInfo {
 		[String]$Manufacturer= 'Automatic'
 	)
     $SerialNumber = if ($Serial -eq 'Automatic') {
-        (Get-CimInstance win32_bios).SerialNumber
+        (Get-CimInstance win32_bios -verbose:$false).SerialNumber
     } else {
         $Serial
     }
     
     $Mfg = if ($Manufacturer -eq 'Automatic') {
-        $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
-        $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
+        $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem -verbose:$false).Manufacturer
+        $model = (Get-CimInstance -ClassName Win32_ComputerSystem -verbose:$false).Model
         switch ($Mfg) {
             "IBM" { $Mfg = "LENOVO" }
             "Hewlett-Packard" { $Mfg = "HP" }
