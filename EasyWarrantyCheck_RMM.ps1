@@ -89,7 +89,7 @@ function Get-Warranty {
     Write-Host "EasyWarrantyCheck Version : 1.0.7"
     # Import Ninja Powershell Module
     Write-Host "Importing Ninja Powershell module"
-    Import-Module NJCliPSh
+    Import-Module NJCliPSh -ErrorAction SilentlyContinue -verbose:$false | Out-Null
     # Set Global Variables
     if ($RMM -eq 'NinjaRMM') {
         Set-Variable ninjawarrantystart -Value $ninjawarrantystart -Scope Global -option ReadOnly -Force
@@ -1374,14 +1374,14 @@ function Get-MachineInfo {
 		[String]$Manufacturer= 'Automatic'
 	)
     $SerialNumber = if ($Serial -eq 'Automatic') {
-        (Get-CimInstance win32_bios).SerialNumber
+        (Get-CimInstance win32_bios -verbose:$false).SerialNumber
     } else {
         $Serial
     }
     
     $Mfg = if ($Manufacturer -eq 'Automatic') {
-        $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
-        $model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
+        $mfg = (Get-CimInstance -ClassName Win32_ComputerSystem -verbose:$false).Manufacturer
+        $model = (Get-CimInstance -ClassName Win32_ComputerSystem -verbose:$false).Model
         switch ($Mfg) {
             "IBM" { $Mfg = "LENOVO" }
             "Hewlett-Packard" { $Mfg = "HP" }
@@ -1706,22 +1706,28 @@ function Write-WarrantyNinjaRMM {
             return "Warranty details already in NinjaRMM"
         } else {
                 if($Warrantystart){
+                    Write-Verbose "Warrantystart: $Warrantystart"
                     if ($Warrantystart -match "\d{2}-\d{2}-\d{4}"){
                         #$Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
                     } else {
                         $Warrantystart = [DateTime]::ParseExact($Warrantystart, $dateformat, $null)
                         $Warrantystart = $Warrantystart.ToString("dd-MM-yyyy")
+                        Write-Verbose "Warrantystart Converted: $Warrantystart"
                     }
                     $Warrantystartutc = Get-Date $Warrantystart -Format "yyyy-MM-dd"
+                    Write-Verbose "Warrantystart UTC: $Warrantystartutc"
                 }
                 if($WarrantyExpiry){
+                    Write-Verbose "WarrantyExpiry: $WarrantyExpiry"
                     if ($WarrantyExpiry -match "\d{2}-\d{2}-\d{4}"){
                         #$WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
                     } else {
                         $WarrantyExpiry = [DateTime]::ParseExact($WarrantyExpiry, $dateformat, $null)
                         $WarrantyExpiry = $WarrantyExpiry.ToString("dd-MM-yyyy")
+                        Write-Verbose "WarrantyExpiryConverted: $WarrantyExpiry"
                     }
                     $WarrantyExpiryutc = Get-Date $WarrantyExpiry -Format "yyyy-MM-dd"
+                    Write-Verbose "WarrantyExpiry UTC: $WarrantyExpiryutc"
                 }
             Write-Verbose "Checking for warranty values to write to NinjaRMM" 
             if($Warrantystartutc){
