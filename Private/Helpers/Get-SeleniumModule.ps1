@@ -10,6 +10,7 @@ function Get-SeleniumModule {
         Get-SelniumModule
     
     #>
+    # Temporarily set verbose preference to 'SilentlyContinue'
     try {
         Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
     }catch{

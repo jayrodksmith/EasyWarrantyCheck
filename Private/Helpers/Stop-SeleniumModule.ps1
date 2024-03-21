@@ -52,10 +52,10 @@ function Stop-SeleniumModule {
 
             }
         }
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null 
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     } 
     if($WebDriver -eq "Chrome"){
         $driver.quit()
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
 }

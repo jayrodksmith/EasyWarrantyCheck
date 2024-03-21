@@ -26,7 +26,7 @@ function Start-SeleniumModule {
         Get-RunAsUserModule
         Import-Module -Name RunAsUser -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
         $scriptblock = {
-            Import-Module Selenium
+            Import-Module Selenium -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
             $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
             $EdgeService = [OpenQA.Selenium.Edge.EdgeDriverService]::CreateDefaultService($WebDriverPath, 'msedgedriver.exe')
             $EdgeService.HideCommandPromptWindow = $true

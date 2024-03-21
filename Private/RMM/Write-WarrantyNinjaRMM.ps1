@@ -34,10 +34,10 @@ function Write-WarrantyNinjaRMM {
             return $errorMessage
         }
         $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
+        $calculatedageofdevice = Get-AgeOfDevice
         if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
             # Set Age of device if start date exists
-            if($ninjadeviceage){
-                $calculatedageofdevice = Get-AgeOfDevice
+            if($ninjadeviceage -and $ninjadeviceage -ne $false){
                 if ($calculatedageofdevice -ne $false){
                     $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
                     if($Currentdeviceage -ne $calculatedageofdevice){
@@ -72,27 +72,26 @@ function Write-WarrantyNinjaRMM {
                 $NinjaWarrantyObj
             }
             
-            if($Warrantystartutc){
+            if($Warrantystartutc -and $Warrantystart -ne $false){
                 Write-Verbose "Will try write Warranty Start Value : $Warrantystartutc"
                 Ninja-Property-Set $ninjawarrantystart $Warrantystartutc
             }
-            if($WarrantyExpiryutc){
+            if($WarrantyExpiryutc -and $WarrantyExpiry -ne $false){
                 Write-Verbose "Will try write Warranty Expiry Value : $WarrantyExpiryutc"
                 Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc
             }
-            if($WarrantyStatus){
+            if($WarrantyStatus -and $WarrantyStatus -ne $false){
                 Write-Verbose "Will try write Warranty Status Value : $WarrantyStatus"
                 Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus
             }
-            if($Invoicenumber){
+            if($Invoicenumber -and $Invoicenumber -ne $false){
                 Write-Verbose "Will try write Warranty Invoice Value : $Invoicenumber"
                 Ninja-Property-Set $ninjainvoicenumber $Invoicenumber
             }
 
             # Set Age of device if start date exists
             Write-Verbose "Checking for Device Age details to write to NinjaRMM" 
-            if($ninjadeviceage){
-                $calculatedageofdevice = Get-AgeOfDevice
+            if($ninjadeviceage -and $ninjadeviceage -ne $false){
                 if ($calculatedageofdevice -ne $false){
                     $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
                     if($Currentdeviceage -ne $calculatedageofdevice){

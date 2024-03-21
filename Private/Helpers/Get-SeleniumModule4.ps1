@@ -15,11 +15,11 @@ function Get-SeleniumModule4 {
     }catch{
         
     }
-    Import-Module PowerShellGet
-    $seleniumModule = Get-Module -Name Selenium -ListAvailable
+    Import-Module PowerShellGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+    $seleniumModule = Get-Module -Name Selenium -ListAvailable -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     if (-not $seleniumModule) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module -Name Selenium -AllowPrerelease
+        Install-Module -Name Selenium -AllowPrerelease -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
-    Import-Module Selenium -Force
+    Import-Module Selenium -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
 }

@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+# [1.1.0] - 21-03-2024
+
+### Added
+
+- More Verbose messages
+
+### Changed
+
+- Will no longer try write values to Ninja if fields are not acessible
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+
 # [1.0.9] - 21-03-2024
 
 ### Added
