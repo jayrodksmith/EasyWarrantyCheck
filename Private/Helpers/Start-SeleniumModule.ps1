@@ -24,7 +24,7 @@ function Start-SeleniumModule {
     )
     if($WebDriver  -eq "Edge"){
         Get-RunAsUserModule
-        Import-Module -Name RunAsUser -Verbose:$false
+        Import-Module -Name RunAsUser -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
         $scriptblock = {
             Import-Module Selenium
             $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"

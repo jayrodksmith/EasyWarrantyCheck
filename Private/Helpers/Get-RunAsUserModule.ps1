@@ -15,11 +15,11 @@ function Get-RunAsUserModule {
     } catch {
         
     }
-    Import-Module PowerShellGet -Verbose:$false
+    Import-Module PowerShellGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     $RunAsUser = Get-Module -Name RunAsUser -ListAvailable | Where-Object { $_.Version -eq '2.4.0' }
     if (-not $RunAsUser) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
-        Install-Module RunAsUser -Force -RequiredVersion '2.4.0' -Verbose:$false
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+        Install-Module RunAsUser -Force -RequiredVersion '2.4.0' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
-    Import-Module RunAsUser -Force -Version '2.4.0' -Verbose:$false
+    Import-Module RunAsUser -Force -Version '2.4.0' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
 }
