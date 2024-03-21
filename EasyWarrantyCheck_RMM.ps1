@@ -736,11 +736,11 @@ function Get-WarrantyHP {
         function Set-Iframe {
             # Try Click Iframe if exist
             try{
-                $driver.FindElementById("kampyleForm32059")
-                $iframe = $driver.FindElementById("kampyleForm32059")
-                $iframe2 = $driver.SwitchTo().Frame($iframe)
+                $iframe1 = $driver.FindElementById("kampyleForm32059")
+                $iframe2 = $driver.FindElementById("kampyleForm32059")
+                $iframe3 = $driver.SwitchTo().Frame($iframe2)
                 $driver.FindElementByTagName("body").SendKeys([OpenQA.Selenium.Keys]::Escape)
-                $iframe3 = $driver.SwitchTo().DefaultContent()
+                $iframe4 = $driver.SwitchTo().DefaultContent()
             } catch {
         
             }
@@ -748,7 +748,7 @@ function Get-WarrantyHP {
         function Set-Privacy {
             # Try Click Iframe if exist
             try{
-                $driver.FindElementById("onetrust-accept-btn-handler")
+                $privacyButton = $driver.FindElementById("onetrust-accept-btn-handler")
                 $privacyButton.Click()
             } catch {
         
