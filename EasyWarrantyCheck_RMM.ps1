@@ -86,10 +86,7 @@ function Get-Warranty {
             
     )
     # Print Current Version
-    Write-Host "EasyWarrantyCheck Version : 1.0.9"
-    # Import Ninja Powershell Module
-    Write-Host "Importing Ninja Powershell module"
-    Import-Module NJCliPSh -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+    Write-Host "EasyWarrantyCheck Version : 1.1.0"
     # Set localization
     $DateFormat = (Get-Culture).DateTimeFormat.ShortDatePattern
     $DateFormatGlobal = (Get-Culture).DateTimeFormat.ShortDatePattern
@@ -1644,31 +1641,41 @@ function Get-WarrantyNinjaRMM {
             [Parameter(Mandatory = $false)]
             [Switch]$Display
         )
-        # Test if fields exist
+        # Import Ninja Powershell Module
+        Write-Verbose "Importing Ninja Powershell module"
+        Import-Module NJCliPSh -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+        # Test if fields exist, if not mark them false to prevent trying to store into Ninja
         $testninjawarrantystart = Ninja-Property-Get $ninjawarrantystart 2>&1
         if ($testninjawarrantystart -match "Unable to find the specified field" ){
-            Write-Host "Unable to access warrantystart field in ninja"
+            Write-Host "Unable to access $ninjawarrantystart field in ninja"
             Write-Host "Check permissions of field and that it exists"
+            Set-Variable ninjawarrantystart -Value $false -Scope Global -option ReadOnly -Force
         }
         $testninjawarrantystatus = Ninja-Property-Get $ninjawarrantystatus 2>&1
         if ($testninjawarrantystatus -match "Unable to find the specified field" ){
-            Write-Host "Unable to access warrantystatus field in ninja"
+            Write-Host "Unable to access $ninjawarrantystatus field in ninja"
             Write-Host "Check permissions of field and that it exists"
+            Set-Variable ninjawarrantystatus -Value $false -Scope Global -option ReadOnly -Force
         }
         $testninjawarrantyexpiry = Ninja-Property-Get $ninjawarrantyexpiry 2>&1
         if ($testninjawarrantyexpiry -match "Unable to find the specified field" ){
-            Write-Host "Unable to access warrantyexpiry field in ninja"
+            Write-Host "Unable to access $ninjawarrantyexpiry field in ninja"
             Write-Host "Check permissions of field and that it exists"
+            Set-Variable ninjawarrantyexpiry -Value $false -Scope Global -option ReadOnly -Force
         }
         $testninjainvoicenumber  = Ninja-Property-Get $ninjainvoicenumber 2>&1
         if ($testninjainvoicenumber  -match "Unable to find the specified field" ){
-            Write-Host "Unable to access invoicenumber field in ninja"
+            Write-Host "Unable to access $ninjainvoicenumber field in ninja"
             Write-Host "Check permissions of field and that it exists"
+            Set-Variable ninjainvoicenumber -Value $false -Scope Global -option ReadOnly -Force
         }
-        $ninjawarrantystartvalue = Ninja-Property-Get $ninjawarrantystart
+        $testninjadeviceage  = Ninja-Property-Get $ninjadeviceage 2>&1
+        if ($testninjadeviceage  -match "Unable to find the specified field" ){
+            Write-Host "Unable to access $ninjadeviceage field in ninja"
+            Write-Host "Check permissions of field and that it exists"
+            Set-Variable ninjadeviceage -Value $false -Scope Global -option ReadOnly -Force
+        }
         $ninjawarrantystatusvalue = Ninja-Property-Get $ninjawarrantystatus
-        $ninjawarrantyexpiryvalue = Ninja-Property-Get $ninjawarrantyexpiry
-        $ninjainvoicenumbervalue = Ninja-Property-Get $ninjainvoicenumber
         if ($null -ne $ninjawarrantystatusvalue){
             if ($Display){
                 return $ninjawarrantystatusvalue
@@ -1716,10 +1723,10 @@ function Write-WarrantyNinjaRMM {
             return $errorMessage
         }
         $WarrantyNinjaRMM = Get-WarrantyNinjaRMM
+        $calculatedageofdevice = Get-AgeOfDevice
         if($WarrantyNinjaRMM -eq $true -and ($ForceUpdate -eq $false)){
             # Set Age of device if start date exists
-            if($ninjadeviceage){
-                $calculatedageofdevice = Get-AgeOfDevice
+            if($ninjadeviceage -and $ninjadeviceage -ne $false){
                 if ($calculatedageofdevice -ne $false){
                     $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
                     if($Currentdeviceage -ne $calculatedageofdevice){
@@ -1754,27 +1761,26 @@ function Write-WarrantyNinjaRMM {
                 $NinjaWarrantyObj
             }
             
-            if($Warrantystartutc){
+            if($Warrantystartutc -and $Warrantystart -ne $false){
                 Write-Verbose "Will try write Warranty Start Value : $Warrantystartutc"
                 Ninja-Property-Set $ninjawarrantystart $Warrantystartutc
             }
-            if($WarrantyExpiryutc){
+            if($WarrantyExpiryutc -and $WarrantyExpiry -ne $false){
                 Write-Verbose "Will try write Warranty Expiry Value : $WarrantyExpiryutc"
                 Ninja-Property-Set $ninjawarrantyexpiry $WarrantyExpiryutc
             }
-            if($WarrantyStatus){
+            if($WarrantyStatus -and $WarrantyStatus -ne $false){
                 Write-Verbose "Will try write Warranty Status Value : $WarrantyStatus"
                 Ninja-Property-Set $ninjawarrantystatus $WarrantyStatus
             }
-            if($Invoicenumber){
+            if($Invoicenumber -and $Invoicenumber -ne $false){
                 Write-Verbose "Will try write Warranty Invoice Value : $Invoicenumber"
                 Ninja-Property-Set $ninjainvoicenumber $Invoicenumber
             }
 
             # Set Age of device if start date exists
             Write-Verbose "Checking for Device Age details to write to NinjaRMM" 
-            if($ninjadeviceage){
-                $calculatedageofdevice = Get-AgeOfDevice
+            if($ninjadeviceage -and $ninjadeviceage -ne $false){
                 if ($calculatedageofdevice -ne $false){
                     $Currentdeviceage = Ninja-Property-Get $ninjadeviceage
                     if($Currentdeviceage -ne $calculatedageofdevice){
@@ -1901,6 +1907,7 @@ function Get-SeleniumModule {
         Get-SelniumModule
     
     #>
+    # Temporarily set verbose preference to 'SilentlyContinue'
     try {
         Set-ExecutionPolicy Bypass -scope Process -Force -ErrorAction SilentlyContinue | Out-Null
     }catch{
@@ -1932,13 +1939,13 @@ function Get-SeleniumModule4 {
     }catch{
         
     }
-    Import-Module PowerShellGet
-    $seleniumModule = Get-Module -Name Selenium -ListAvailable
+    Import-Module PowerShellGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+    $seleniumModule = Get-Module -Name Selenium -ListAvailable -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     if (-not $seleniumModule) {
         Get-PackageProvider -Name "nuGet" -ForceBootstrap | Out-Null
-        Install-Module -Name Selenium -AllowPrerelease
+        Install-Module -Name Selenium -AllowPrerelease -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
-    Import-Module Selenium -Force
+    Import-Module Selenium -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
 }
 
 function Get-WarrantyRegistry {
@@ -2161,7 +2168,7 @@ function Start-SeleniumModule {
         Get-RunAsUserModule
         Import-Module -Name RunAsUser -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
         $scriptblock = {
-            Import-Module Selenium
+            Import-Module Selenium -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
             $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
             $EdgeService = [OpenQA.Selenium.Edge.EdgeDriverService]::CreateDefaultService($WebDriverPath, 'msedgedriver.exe')
             $EdgeService.HideCommandPromptWindow = $true
@@ -2273,11 +2280,11 @@ function Stop-SeleniumModule {
 
             }
         }
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null 
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     } 
     if($WebDriver -eq "Chrome"){
         $driver.quit()
-        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -Verbose:$false | Out-null
+        Remove-Module Selenium -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
 }
 
