@@ -1865,13 +1865,13 @@ function Get-RunAsUserModule {
     } catch {
         
     }
-    Import-Module PowerShellGet -Verbose:$false
+    Import-Module PowerShellGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     $RunAsUser = Get-Module -Name RunAsUser -ListAvailable | Where-Object { $_.Version -eq '2.4.0' }
     if (-not $RunAsUser) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
-        Install-Module RunAsUser -Force -RequiredVersion '2.4.0' -Verbose:$false
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+        Install-Module RunAsUser -Force -RequiredVersion '2.4.0' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
-    Import-Module RunAsUser -Force -Version '2.4.0' -Verbose:$false
+    Import-Module RunAsUser -Force -Version '2.4.0' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
 }
 
 
@@ -1892,13 +1892,13 @@ function Get-SeleniumModule {
     }catch{
         
     }
-    Import-Module PowerShellGet -Verbose:$false
+    Import-Module PowerShellGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     $seleniumModule = Get-Module -Name Selenium -ListAvailable | Where-Object { $_.Version -eq '3.0.1' }
     if (-not $seleniumModule) {
-        Get-PackageProvider -Name "nuGet" -ForceBootstrap -Verbose:$false | Out-Null
-        Install-Module Selenium -Force -RequiredVersion '3.0.1' -Verbose:$false
+        Get-PackageProvider -Name "nuGet" -ForceBootstrap -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
+        Install-Module Selenium -Force -RequiredVersion '3.0.1' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
     }
-    Import-Module Selenium -Force -Version '3.0.1' -Verbose:$false
+    Import-Module Selenium -Force -Version '3.0.1' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
 }
 
 function Get-SeleniumModule4 {
@@ -2145,7 +2145,7 @@ function Start-SeleniumModule {
     )
     if($WebDriver  -eq "Edge"){
         Get-RunAsUserModule
-        Import-Module -Name RunAsUser -Verbose:$false
+        Import-Module -Name RunAsUser -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -verbose:$false | Out-Null
         $scriptblock = {
             Import-Module Selenium
             $WebDriverPath = "C:\temp\EasyWarrantyCheck\WebDrivers"
