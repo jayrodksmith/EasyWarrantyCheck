@@ -21,7 +21,9 @@ function Get-WarrantyToshiba {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = $DateFormatGlobal
+            [String]$DateFormat = $DateFormatGlobal,
+            [Parameter(Mandatory = $false)]
+            [String]$NinjaOrg
         )
         # Define the URL
         Write-Host "Checking Toshiba website for serial : $Serial"
@@ -57,7 +59,8 @@ function Get-WarrantyToshiba {
                 'StartDate' = $warstartDate
                 'EndDate' = $warendDate
                 'Warranty Status' = $warrantystatus
-                'Client' = $null
+                'Manufacturer'          = 'Toshiba'
+                'Client' = $NinjaOrg
                 'Product Image' = $null
                 'Warranty URL' = $url
             }
@@ -69,7 +72,8 @@ function Get-WarrantyToshiba {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
+                'Manufacturer'          = 'Toshiba'
+                'Client' = $NinjaOrg
                 'Product Image' = $null
                 'Warranty URL' = $null
             }

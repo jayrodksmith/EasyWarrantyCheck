@@ -27,19 +27,33 @@ function Write-WarrantyRegistry{
             [Parameter(Mandatory = $false)]
             [String]$Invoicenumber,
             [Parameter(Mandatory = $false)]
-            [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
+            [Switch]$ServerLastCheck,
+            [Parameter(Mandatory = $false)]
+            [String]$RegistryPath= 'HKLM:\SOFTWARE\RMM\EasyWarrantyCheck'
         )
+        # Cleanup Old Registry 
+        $RegistryPathOld= 'HKLM:\SOFTWARE\RMMCustomInfo'
+        if (Test-Path $RegistryPathOld){
+            Remove-Item $RegistryPathOld -Force -ErrorAction SilentlyContinue | Out-Null
+            Write-Verbose "Removing old registry key"
+        }
+        # Create Registry if not exist
+        if (-not (Test-Path $RegistryPath)){
+            New-Item -Path $RegistryPath -Force -ErrorAction SilentlyContinue | Out-Null
+            Write-Verbose "Registry key created successfully."
+        } else {
+            Write-Verbose "Registry key already exists."
+        }
+        if($ServerLastCheck){
+            $todaysdate = Get-Date -format $DateFormatGlobal
+            New-ItemProperty -Path $RegistryPath -Name "ServerLastCheck" -PropertyType String -Value $todaysdate -Force -ErrorAction SilentlyContinue | Out-Null
+            New-ItemProperty -Path $RegistryPath -Name "ServerBrowserSupport" -PropertyType String -Value $DriverMode -Force -ErrorAction SilentlyContinue | Out-Null
+            return "Server Checked"
+        }
         $registryvalue = Get-WarrantyRegistry $RegistryPath
         if($registryvalue -eq $true -and ($ForceUpdate -eq $false)){
             return "Warranty details already in Registry"
         } else {
-                if (-not (Test-Path $RegistryPath)) {
-                    # Create the registry key if it doesn't exist
-                    New-Item -Path $RegistryPath -Force -ErrorAction SilentlyContinue | Out-Null
-                    Write-Verbose "Registry key created successfully."
-                } else {
-                    Write-Verbose "Registry key already exists."
-                }
                 if($Warrantystart){
                     New-ItemProperty -Path $RegistryPath -Name "WarrantyStart" -PropertyType String -Value $Warrantystart -Force -ErrorAction SilentlyContinue | Out-Null
                 }

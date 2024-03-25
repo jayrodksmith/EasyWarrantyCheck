@@ -23,7 +23,9 @@ function Get-WarrantyHP {
         [Parameter(Mandatory = $false)]
         [String]$DateFormat = $DateFormatGlobal,
         [Parameter(Mandatory = $false)]
-        [String]$SystemSKU
+        [String]$SystemSKU,
+        [Parameter(Mandatory = $false)]
+        [String]$NinjaOrg
     )
 
         if ($browsersupport -eq $false){
@@ -41,7 +43,8 @@ function Get-WarrantyHP {
                     'StartDate'             = $wsd
                     'EndDate'               = $null
                     'Warranty Status'       = 'Could not get warranty information'
-                    'Client'                = $null
+                    'Manufacturer'          = 'HP'
+                    'Client'                = $NinjaOrg
                     'Product Image'         = $null
                     'Warranty URL'          = $null
                 }
@@ -56,7 +59,8 @@ function Get-WarrantyHP {
                     'StartDate'             = $null
                     'EndDate'               = $null
                     'Warranty Status'       = 'Could not get warranty information'
-                    'Client'                = $null
+                    'Manufacturer'          = 'HP'
+                    'Client'                = $NinjaOrg
                     'Product Image'         = $null
                     'Warranty URL'          = $null
                 }
@@ -78,7 +82,8 @@ function Get-WarrantyHP {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
+                'Manufacturer'          = 'HP'
+                'Client' = $NinjaOrg
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
@@ -236,7 +241,8 @@ function Get-WarrantyHP {
             'StartDate'             = $warfirst
             'EndDate'               = $warlatest
             'Warranty Status'       = $warrantyStatusText
-            'Client'                = $null
+            'Manufacturer'          = 'HP'
+            'Client'                = $NinjaOrg
             'Product Image'         = $null
             'Warranty URL'          = $null
         }
@@ -248,7 +254,8 @@ function Get-WarrantyHP {
             'StartDate'             = $null
             'EndDate'               = $null
             'Warranty Status'       = 'Could not get warranty information'
-            'Client'                = $null
+            'Manufacturer'          = 'HP'
+            'Client'                = $NinjaOrg
             'Product Image'         = $null
             'Warranty URL'          = $null
         }

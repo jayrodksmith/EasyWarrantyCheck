@@ -21,7 +21,9 @@ function Get-WarrantyLenovo {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = $DateFormatGlobal
+            [String]$DateFormat = $DateFormatGlobal,
+            [Parameter(Mandatory = $false)]
+            [String]$NinjaOrg
         )
         Write-Host "Checking Lenovo website for serial : $Serial"
         Write-Host "Waiting for results......."
@@ -57,6 +59,7 @@ function Get-WarrantyLenovo {
                 'StartDate'             = $warfirst.Start
                 'EndDate'               = $warlatest.End
                 'Warranty Status'       = $warrantystatus
+                'Manufacturer'          = 'Lenovo'
                 'Client'                = $null
                 'Product Image'         = $jsonWarranties.ProductImage
                 'Warranty URL'          = $jsonWarranties.WarrantyUpgradeURLInfo.WarrantyURL
@@ -68,6 +71,7 @@ function Get-WarrantyLenovo {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
+                'Manufacturer'          = 'Lenovo'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null

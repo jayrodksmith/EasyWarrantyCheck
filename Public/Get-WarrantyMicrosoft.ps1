@@ -21,7 +21,9 @@ function Get-WarrantyMicrosoft {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = $DateFormatGlobal
+            [String]$DateFormat = $DateFormatGlobal,
+            [Parameter(Mandatory = $false)]
+            [String]$NinjaOrg
         )
         # Define the URL
         Write-Host "Checking Microsoft website for serial : $Serial"
@@ -58,7 +60,8 @@ function Get-WarrantyMicrosoft {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = $null
-                'Client' = $null
+                'Manufacturer'          = 'Microsoft'
+                'Client' = $NinjaOrg
                 'Product Image' = $null
                 'Warranty URL' = $null
             }
@@ -70,7 +73,8 @@ function Get-WarrantyMicrosoft {
                 'StartDate' = $null
                 'EndDate' = $null
                 'Warranty Status' = 'Could not get warranty information'
-                'Client' = $null
+                'Manufacturer'          = 'Microsoft'
+                'Client' = $NinjaOrg
                 'Product Image' = ""
                 'Warranty URL' = ""
             }

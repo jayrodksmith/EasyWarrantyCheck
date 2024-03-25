@@ -21,7 +21,9 @@ function Get-WarrantyTerra {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = $DateFormatGlobal
+            [String]$DateFormat = $DateFormatGlobal,
+            [Parameter(Mandatory = $false)]
+            [String]$NinjaOrg
         )
 
         if ($browsersupport -eq $false){
@@ -31,6 +33,7 @@ function Get-WarrantyTerra {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
+                'Manufacturer'          = 'Terra'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null
@@ -51,6 +54,7 @@ function Get-WarrantyTerra {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
+                'Manufacturer'          = 'Terra'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null
@@ -117,6 +121,7 @@ function Get-WarrantyTerra {
                 'StartDate'             = $warstartDate
                 'EndDate'               = $warEndDate
                 'Warranty Status'       = $warrantystatus
+                'Manufacturer'          = 'Terra'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null
@@ -128,6 +133,7 @@ function Get-WarrantyTerra {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
+                'Manufacturer'          = 'Terra'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null

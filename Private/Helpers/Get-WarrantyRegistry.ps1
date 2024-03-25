@@ -18,8 +18,21 @@ function Get-WarrantyRegistry {
             [Parameter(Mandatory = $false)]
             [Switch]$Display,
             [Parameter(Mandatory = $false)]
-            [String]$RegistryPath= 'HKLM:\SOFTWARE\RMMCustomInfo'
+            [Switch]$ServerLastCheck,
+            [Parameter(Mandatory = $false)]
+            [Switch]$ServerBrowserSupport,
+            [Parameter(Mandatory = $false)]
+            [String]$RegistryPath= 'HKLM:\SOFTWARE\RMM\EasyWarrantyCheck'
         )
-        $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'WarrantyStatus' -ErrorAction SilentlyContinue
-        return ($null -ne $registryValue -and $null -ne $registryValue.WarrantyStatus)
+        if($ServerBrowserSupport){
+            $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'ServerBrowserSupport' -ErrorAction SilentlyContinue
+            return $registryValue.ServerBrowserSupport
+        }
+        if($ServerLastCheck){
+            $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'ServerLastCheck' -ErrorAction SilentlyContinue
+            return $registryValue.ServerLastCheck
+        } else {
+            $registryValue = Get-ItemProperty -Path $RegistryPath -Name 'WarrantyStatus' -ErrorAction SilentlyContinue
+            return ($null -ne $registryValue -and $null -ne $registryValue.WarrantyStatus)
+        }
     }

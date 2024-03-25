@@ -6,12 +6,13 @@ function  Get-DevicesNinjaRMM {
         [String]$AccessKey = "test", # Add keys here
         [boolean]$SyncWithSource,
         [boolean]$OverwriteWarranty,
-        [string]$NinjaFieldName
+        [string]$NinjaFieldName = 'warrantyExpiry',
+        [string]$filterorg = "58"
     )
     $AuthBody = @{
         'grant_type'    = 'client_credentials'
-        'client_id'     = $Secretkey
-        'client_secret' = $AccessKey
+        'client_id'     = $AccessKey
+        'client_secret' = $Secretkey
         'scope'         = 'management monitoring' 
     }
     
@@ -32,7 +33,11 @@ function  Get-DevicesNinjaRMM {
     } else {
         $DevicesRaw = Invoke-WebRequest -uri "$($NinjaURL)/v2/devices-detailed" -Method GET -Headers $AuthHeader
         $Devices = ($DevicesRaw.content | ConvertFrom-Json) | Where-Object { $_.nodeClass -like "WINDOWS*" -and $_.system.model -notmatch "Virtual Machine"}
-
+        
+        if($filterorg){
+            $Devices = $Devices | Where-Object {$_.organizationId -eq $filterorg}
+        }
+        $Devices
         $After = 0
         $PageSize = 1000
         $AllDevices = @()
@@ -58,14 +63,40 @@ function  Get-DevicesNinjaRMM {
         Write-Progress -Activity "Grabbing Warranty information" -status "Processing $($device.system.biosSerialNumber). Device $i of $($Devices.Count)" -percentComplete $progressPercentage
         $DeviceOrg = ($NinjaOrgs | Where-Object { $_.id -eq $Device.organizationId }).name
         try {
-            if($device.system.manufacturer -eq "ASUSTeK COMPUTER INC."){$vendor = "ASUS"}
-            $WarState = Get-Warrantyinfo -Serialnumber $device.system.biosSerialNumber -client $DeviceOrg -Vendor $vendor
+            $Mfg = $($device.system.manufacturer)
+            $Mfg = if ($Mfg) {
+                switch ($Mfg) {
+                    "IBM" { $Mfg = "LENOVO" }
+                    "Hewlett-Packard" { $Mfg = "HP" }
+                    {$_ -match "Asus"} { $Mfg = "ASUS" }
+                    {$_ -match "Wortmann"} { $Mfg = "TERRA" }
+                    {$_ -match "Terra"} { $Mfg = "TERRA" }
+                    {$_ -match "Dell"} { $Mfg = "DELL" }
+                    {$_ -match "HP"} { $Mfg = "HP" }
+                    {$_ -match "Edsys"} { $Mfg = "EDSYS" }
+                    {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
+                    {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
+                    {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
+                    {$_ -match "Intel Corporation"} { 
+                        $pattern = "^B\d{6}$"
+                        if ($SerialNumber -match $pattern){
+                            $Mfg = "EDSYS"
+                        }
+                    }
+                    default { $Mfg = $Mfg }
+                }
+                $Mfg
+            } else {
+                $Mfg 
+            }
+            $WarState = Get-Warranty -RMM 'NinjaRMMAPI' -Serial "$($device.system.biosSerialNumber)" -Manufacturer $Mfg -NinjaOrg $DeviceOrg
         } catch {
             Write-Error "Failed to fetch warranty data for device: $($Device.systemName) $_"
         }
             $DeviceObject = [PSCustomObject]@{
             id = $device.id
             organizationId = $device.organizationId
+            organizationName = $DeviceOrg
             systemname = $device.systemname
             biosSerialNumber = $device.system.biosSerialNumber
             SerialNumber = $device.system.SerialNumber
@@ -93,18 +124,18 @@ function  Get-DevicesNinjaRMM {
                     $true {
                         
                         try {
-                           # $Result = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method PATCH -Headers $AuthHeader -body $UpdateBody -contenttype 'application/json' -ea stop
+                            $Result = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method PATCH -Headers $AuthHeader -body $UpdateBody -contenttype 'application/json' -ea stop
                         } catch {
                             Write-Error "Failed to update device: $($Device.systemName) $_"
                         }
                     }
                     $false {
-                       # $DeviceFields = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method GET -Headers $AuthHeader
-                       # $WarrantyDate = ($DeviceFields.content | convertfrom-json)."$($NinjaFieldName)"
+                        $DeviceFields = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method GET -Headers $AuthHeader
+                        $WarrantyDate = ($DeviceFields.content | convertfrom-json)."$($NinjaFieldName)"
 
                         if ($null -eq $WarrantyDate -and $null -ne $warstate.EndDate) { 
                             try {
-                               # $Result = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method PATCH -Headers $AuthHeader -body $UpdateBody -contenttype 'application/json' -ea stop
+                                $Result = Invoke-WebRequest -uri "$($NinjaURL)/v2/device/$($Device.id)/custom-fields" -Method PATCH -Headers $AuthHeader -body $UpdateBody -contenttype 'application/json' -ea stop
                             } catch {
                                 Write-Error "Failed to update device: $($Device.systemName) $_"
                             }        
@@ -117,5 +148,4 @@ function  Get-DevicesNinjaRMM {
     }
     Remove-item 'devices.json' -Force -ErrorAction SilentlyContinue
     return $warrantyObject
-
 }

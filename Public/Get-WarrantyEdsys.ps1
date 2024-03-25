@@ -21,7 +21,9 @@ function Get-WarrantyEdsys {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = $DateFormatGlobal
+            [String]$DateFormat = $DateFormatGlobal,
+            [Parameter(Mandatory = $false)]
+            [String]$NinjaOrg
         )
         # Define the URL
         Write-Host "Checking Edsys website for serial : $Serial"
@@ -128,6 +130,7 @@ function Get-WarrantyEdsys {
                 'StartDate'             = $warfirst
                 'EndDate'               = $warEndDate
                 'Warranty Status'       = $warrantystatus
+                'Manufacturer'          = 'Edsys'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null
@@ -140,6 +143,7 @@ function Get-WarrantyEdsys {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
+                'Manufacturer'          = 'Edsys'
                 'Client'                = $null
                 'Product Image'         = $null
                 'Warranty URL'          = $null

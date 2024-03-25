@@ -21,7 +21,9 @@ function Get-WarrantyAsus {
             [Parameter(Mandatory = $true)]
             [String]$Serial,
             [Parameter(Mandatory = $false)]
-            [String]$DateFormat = $DateFormatGlobal
+            [String]$DateFormat = $DateFormatGlobal,
+            [Parameter(Mandatory = $false)]
+            [String]$NinjaOrg
         )
 
         if ($browsersupport -eq $false){
@@ -31,7 +33,8 @@ function Get-WarrantyAsus {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
-                'Client'                = $null
+                'Manufacturer'          = 'Asus'
+                'Client'                = $NinjaOrg
                 'Product Image'         = $null
                 'Warranty URL'          = $null
             }
@@ -51,7 +54,8 @@ function Get-WarrantyAsus {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
-                'Client'                = $null
+                'Manufacturer'          = 'Asus'
+                'Client'                = $NinjaOrg
                 'Product Image'         = $null
                 'Warranty URL'          = $null
             }
@@ -119,7 +123,8 @@ function Get-WarrantyAsus {
                 'StartDate'             = $null
                 'EndDate'               = $warEndDate
                 'Warranty Status'       = $warrantystatus
-                'Client'                = $null
+                'Manufacturer'          = 'Asus'
+                'Client'                = $NinjaOrg
                 'Product Image'         = $null
                 'Warranty URL'          = $null
             }
@@ -130,7 +135,8 @@ function Get-WarrantyAsus {
                 'StartDate'             = $null
                 'EndDate'               = $null
                 'Warranty Status'       = 'Could not get warranty information'
-                'Client'                = $null
+                'Manufacturer'          = 'Asus'
+                'Client'                = $NinjaOrg
                 'Product Image'         = $null
                 'Warranty URL'          = $null
             }
