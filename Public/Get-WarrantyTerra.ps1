@@ -103,9 +103,9 @@ function Get-WarrantyTerra {
         $warEndDate = [DateTime]::ParseExact($warEndDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
         $warEndDate = $warEndDate.ToString($dateformat)
 
-        $warstartDate = $($table1.'Warranty starting date')
-        $warstartDate= [DateTime]::ParseExact($warstartDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
-        $warstartDate = $warstartDate.ToString($dateformat)
+        $warstartDate   = $($table1.'Warranty starting date')
+        $warstartDate   = [DateTime]::ParseExact($warstartDate, "dd/MM/yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+        $warstartDate   = $warstartDate.ToString($dateformat)
 
         $warrantyStatus = $null
         if ((Get-Date $warEndDate) -gt (Get-Date)) {

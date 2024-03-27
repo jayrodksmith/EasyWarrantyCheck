@@ -77,15 +77,15 @@ function Get-WarrantyHP {
         }catch{
             Write-Verbose $_.Exception.Message
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
+                'Serial'                = $Serial
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
                 'Manufacturer'          = 'HP'
-                'Client' = $NinjaOrg
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'Client'                = $NinjaOrg
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
             Remove-Module Selenium -Verbose:$false
             return $warObj

@@ -54,29 +54,29 @@ function Get-WarrantyMicrosoft {
 
         if ($($table.'Warranty Status')) {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
-                'Invoice' = $null
+                'Serial'                = $Serial
+                'Invoice'               = $null
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = $null
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = $null
                 'Manufacturer'          = 'Microsoft'
-                'Client' = $NinjaOrg
-                'Product Image' = $null
-                'Warranty URL' = $null
+                'Client'                = $NinjaOrg
+                'Product Image'         = $null
+                'Warranty URL'          = $null
             }
         } else {
             $WarObj = [PSCustomObject]@{
-                'Serial' = $Serial
-                'Invoice' = $null
+                'Serial'                = $Serial
+                'Invoice'               = $null
                 'Warranty Product name' = $null
-                'StartDate' = $null
-                'EndDate' = $null
-                'Warranty Status' = 'Could not get warranty information'
+                'StartDate'             = $null
+                'EndDate'               = $null
+                'Warranty Status'       = 'Could not get warranty information'
                 'Manufacturer'          = 'Microsoft'
-                'Client' = $NinjaOrg
-                'Product Image' = ""
-                'Warranty URL' = ""
+                'Client'                = $NinjaOrg
+                'Product Image'         = ""
+                'Warranty URL'          = ""
             }
         }
     return $WarObj

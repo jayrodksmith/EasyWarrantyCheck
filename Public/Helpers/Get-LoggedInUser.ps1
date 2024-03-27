@@ -19,29 +19,29 @@ function Get-LoggedInUser {
         if ($loggedUsers) { 
 
             # Split the output into an array of lines
-            $userArray = $loggedUsers -split '\r?\n' | Select-Object -Skip 1
+            $userArray          = $loggedUsers -split '\r?\n' | Select-Object -Skip 1
             
             # Create an array to store user details
             $users = foreach ($userLine in $userArray) {
-                $userDetails = $userLine -split '\s{2,}'
+                $userDetails    = $userLine -split '\s{2,}'
                 
                 # Extracting specific details: username, sessionname, ID, state, idle time, logon time
-                $username = $userDetails[0].TrimStart('>')
-                $sessionname = $userDetails[1].Trim()
-                $id = $userDetails[2].Trim()
-                $state = $userDetails[3].Trim()
-                $idleTime = $userDetails[4].Trim()
-                $logonTime = $userDetails[5..6] -join ' '
+                $username       = $userDetails[0].TrimStart('>')
+                $sessionname    = $userDetails[1].Trim()
+                $id             = $userDetails[2].Trim()
+                $state          = $userDetails[3].Trim()
+                $idleTime       = $userDetails[4].Trim()
+                $logonTime      = $userDetails[5..6] -join ' '
 
                 Write-Verbose "User Currently Logged In : $Username"
                 # Create an object with user details
                 [PSCustomObject]@{
-                    Username = $username
-                    SessionName = $sessionname
-                    ID = $id
-                    State = $state
-                    IdleTime = $idleTime
-                    LogonTime = $logonTime
+                    Username        = $username
+                    SessionName     = $sessionname
+                    ID              = $id
+                    State           = $state
+                    IdleTime        = $idleTime
+                    LogonTime       = $logonTime
                 }
             }
 

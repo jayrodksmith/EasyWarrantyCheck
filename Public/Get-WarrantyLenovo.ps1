@@ -34,18 +34,18 @@ function Get-WarrantyLenovo {
             Write-Host $($_.Exception.Message)
         }
         if($WarReq.id){
-            $APIURL = "https://pcsupport.lenovo.com/us/en/products/$($WarReq.id)/warranty"
-            $WarReq = Invoke-RestMethod -Uri $APIURL -Method get
-            $search = $WarReq |Select-String -Pattern "var ds_warranties = window.ds_warranties \|\| (.*);[\r\n]*"
-            $jsonWarranties = $search.matches.groups[1].value |ConvertFrom-Json
+            $APIURL             = "https://pcsupport.lenovo.com/us/en/products/$($WarReq.id)/warranty"
+            $WarReq             = Invoke-RestMethod -Uri $APIURL -Method get
+            $search             = $WarReq |Select-String -Pattern "var ds_warranties = window.ds_warranties \|\| (.*);[\r\n]*"
+            $jsonWarranties     = $search.matches.groups[1].value |ConvertFrom-Json
             }
 
             $checkenddateexists = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
 
         if ( $checkenddateexists.end -ne "0") {
-            $warfirst = $jsonWarranties.EntireWarrantyPeriod | Select-Object "Start"
-            $warlatest = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
-            $warRemainingdays = $jsonWarranties.Remainingdays
+            $warfirst           = $jsonWarranties.EntireWarrantyPeriod | Select-Object "Start"
+            $warlatest          = $jsonWarranties.EntireWarrantyPeriod | Select-Object "End"
+            $warRemainingdays   = $jsonWarranties.Remainingdays
             if($warRemainingdays -gt 0){
                 $warrantystatus = "Active"
             }else{

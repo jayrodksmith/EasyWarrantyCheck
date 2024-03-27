@@ -80,19 +80,19 @@ function Get-WarrantyDell {
         
         if ($DateRegex.Success) {
             # Extract the matched date
-            $MatchedText = $DateRegex.Value
-            $StatusDate = ($MatchedText -split " ")[1..3] -join " "
+            $MatchedText        = $DateRegex.Value
+            $StatusDate         = ($MatchedText -split " ")[1..3] -join " "
         
             # Convert date format (from "dd MMM yyyy" to "dd-MM-yyyy")
-            $WarrantyEndDate = [datetime]::ParseExact($StatusDate, "dd MMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
-            $FormattedDate = $WarrantyEndDate.ToString($dateformat)
+            $WarrantyEndDate    = [datetime]::ParseExact($StatusDate, "dd MMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+            $FormattedDate      = $WarrantyEndDate.ToString($dateformat)
         
             # Check if it's expired or not
             if ($MatchedText -like "*Expired*") {
-                $warEndDate = $FormattedDate
+                $warEndDate     = $FormattedDate
                 $warrantystatus = "Expired"
             } else {
-                $warEndDate = $FormattedDate
+                $warEndDate     = $FormattedDate
                 $warrantystatus = "In Warranty"
             }
             # Try for Start Date
