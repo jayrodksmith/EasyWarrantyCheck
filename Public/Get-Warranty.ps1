@@ -117,9 +117,7 @@ function Get-Warranty {
             
     )
     # Print Current Version
-    if($RMM -ne 'NinjaRMMAPI'){
-        Write-Host "EasyWarrantyCheck Version : 1.1.0"
-    }
+    Write-Host "EasyWarrantyCheck Version : 1.1.0"
     # Set localization
     $DateFormat = (Get-Culture).DateTimeFormat.ShortDatePattern
     $DateFormatGlobal = (Get-Culture).DateTimeFormat.ShortDatePattern
@@ -304,11 +302,14 @@ function Get-Warranty {
         }
         $i = 0
         $syncresults = [PSCustomObject]@{
-            Failed = 0
-            Successful = 0
+            'Devices Total' = $ninjadevices.count
+            'Devices Failed' = 0
+            'Devices Successful' = 0
+            'Devices Skipped' = 0
         }
         $failedDevicesObject = [PSCustomObject]@{
             "Failed Devices" = @()
+            "Skipped Devices" = @()
         }
         $warrantyObject = foreach ($ninjadevice in $ninjadevices) {
             $Warobj = ""
@@ -326,7 +327,7 @@ function Get-Warranty {
                     $Warobj = Get-WarrantySwitch
                 } catch {
                     Write-Error "Failed to fetch warranty data for device: $($ninjadevice.systemName) $_.Exception.Message"
-                    $syncresults.Failed++
+                    $syncresults.'Devices Failed'++
                     $failedDevicesObject."Failed Devices" += $($ninjadevice.systemName)
                 }
                     Write-Verbose "Creating DeviceObject"
@@ -374,11 +375,11 @@ function Get-Warranty {
                                 try {
                                     Write-Verbose "Writing Results to Ninja"
                                     $Result         = Set-NinjaOneDeviceCustomFields -deviceid $($ninjadevice.id) -customfields $UpdateBody
-                                    $syncresults.Successful++
+                                    $syncresults.'Devices Successful'++
                                 } catch {
                                     Write-Verbose "Failed to update custom fields for device: $($ninjadevice.systemName)"
                                     Write-Verbose "$_.Exception.Message"
-                                    $syncresults.Failed++
+                                    $syncresults.'Devices Failed'++
                                     $failedDevicesObject."Failed Devices" += $($ninjadevice.systemName)
                                 }
                             }
@@ -398,27 +399,36 @@ function Get-Warranty {
                                 }
                                     # Convert the hashtable to JSON
                                     $UpdateBody = $UpdateBody | ConvertTo-Json
-                                    try {
-                                        Write-Verbose "Writing Results to Ninja"
-                                        $Result     = Set-NinjaOneDeviceCustomFields -deviceid $($ninjadevice.id) -customfields $UpdateBody
-                                        $syncresults.Successful++
-                                    } catch {
-                                        Write-Verbose "Failed to update custom fields for device: $($ninjadevice.systemName)"
-                                        Write-Verbose "$_.Exception.Message"
-                                        $syncresults.Failed++
-                                        $failedDevicesObject."Failed Devices" += $($ninjadevice.systemName)
-                                    }        
+                                    if($null -ne $UpdateBody){
+                                        try {
+                                            Write-Verbose "Writing Results to Ninja"
+                                            $Result     = Set-NinjaOneDeviceCustomFields -deviceid $($ninjadevice.id) -customfields $UpdateBody
+                                            $syncresults.'Devices Successful'++
+                                        } catch {
+                                            Write-Verbose "Failed to update custom fields for device: $($ninjadevice.systemName)"
+                                            Write-Verbose "$_.Exception.Message"
+                                            $syncresults.'Devices Failed'++
+                                            $failedDevicesObject."Failed Devices" += $($ninjadevice.systemName)
+                                        }  
+                                    } else {
+                                        $syncresults.'Devices Skipped'++
+                                        $failedDevicesObject."Skipped Devices" += $($ninjadevice.systemName)
+                                    }
                             }
                         }
                     }
                 }
                 $Warobj
-                Write-Output "Sync Results"
-                $syncresults
-                $failedDevicesObject
+            }else{
+                Write-Verbose "Skipping device $($ninjadevice.systemName)"
+                $syncresults.'Devices Skipped'++
+                $failedDevicesObject."Skipped Devices" += $($ninjadevice.systemName)
             }
         }
-        #Remove-item 'devices.json' -Force -ErrorAction SilentlyContinue
+        Remove-item 'devices.json' -Force -ErrorAction SilentlyContinue
+        Write-Output "Sync Results"
+        $syncresults | fl
+        Write-Verbose ($failedDevicesObject | Format-List | Out-String)
         return $warrantyObject
     }
 
