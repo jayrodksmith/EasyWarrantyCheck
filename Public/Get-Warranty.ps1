@@ -9,7 +9,8 @@ function Get-Warranty {
         .EXAMPLE
         Get-Warranty
         Get-Warranty -Serial "SerialNumber" -Manufacturer "HP" -RMM 'None'
-    
+        Get-Warranty -RMM 'NinjaRMMAPI' -NinjaInstance 'oc' -ninjaorgid '70' -NinjaSecretkey 'secretkey' -NinjaAccesskey 'accesskey' -NinjaSync -ForceUpdate $true
+
         .PARAMETER Serial
         Manually set serial
     

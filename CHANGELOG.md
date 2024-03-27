@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+# [2.0.0] - 28-03-2024
+
+### Added
+
+- NinjaOne API support using NinjaOne powershell module
+- NinjaOne Org detection
+- Error handling for Ninjaone API integration
+- More Verbose messages
+- Function to change date to UTC
+
+### Changed
+
+- Get-Machineinfo now works with NinjaOne API and Standalone
+- Order of Get-Warranty to better work with NinjaOne API
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Spelling mistakes
+- Formatting of powershell objects for better reading
+
 # [1.1.0] - 21-03-2024
 
 ### Added
@@ -17,7 +41,6 @@
 ### Removed
 
 ### Fixed
-
 
 # [1.0.9] - 21-03-2024
 
