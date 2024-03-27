@@ -22,9 +22,39 @@ function Get-MachineInfo {
 		[Parameter(Mandatory = $false)]
 		[String]$Serial= 'Automatic',
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Automatic', 'Dell', 'HP', 'Edsys', 'Asus', 'Lenovo', 'TOSHIBA', 'Intel Corporation' , 'Terra' , 'Wortmann')]
-		[String]$Manufacturer= 'Automatic'
+		[String]$Manufacturer= 'Automatic',
+        [Switch]$NinjaRMMAPI
 	)
+
+    if($NinjaRMMAPI){
+        $Mfg = if ($Mfg) {
+            switch ($Mfg) {
+                "IBM" { $Mfg = "LENOVO" }
+                "Hewlett-Packard" { $Mfg = "HP" }
+                {$_ -match "Asus"} { $Mfg = "ASUS" }
+                {$_ -match "Wortmann"} { $Mfg = "TERRA" }
+                {$_ -match "Terra"} { $Mfg = "TERRA" }
+                {$_ -match "Dell"} { $Mfg = "DELL" }
+                {$_ -match "HP"} { $Mfg = "HP" }
+                {$_ -match "Edsys"} { $Mfg = "EDSYS" }
+                {$_ -match "Lenovo"} { $Mfg = "LENOVO" }
+                {$_ -match "Microsoft"} { $Mfg = "MICROSOFT" }
+                {$_ -match "TOSHIBA"} { $Mfg = "TOSHIBA" }
+                {$_ -match "Intel Corporation"} { 
+                    $pattern = "^B\d{6}$"
+                    if ($SerialNumber -match $pattern){
+                        $Mfg = "EDSYS"
+                    }
+                }
+                default { $Mfg = $Mfg }
+            }
+            $Mfg
+        } else {
+            $Mfg 
+        }
+        return $Mfg
+    }
+
     $SerialNumber = if ($Serial -eq 'Automatic') {
         (Get-CimInstance win32_bios -verbose:$false).SerialNumber
     } else {
