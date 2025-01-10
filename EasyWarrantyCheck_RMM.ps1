@@ -1900,7 +1900,7 @@ function Get-SeleniumModule {
         This function will get SeleniumModule and install if not installed
 
         .EXAMPLE
-        Get-SelniumModule
+        Get-SeleniumModule
     
     #>
     # Temporarily set verbose preference to 'SilentlyContinue'
@@ -1927,7 +1927,7 @@ function Get-SeleniumModule4 {
         This function will get SeleniumModule4 and install if not installed
 
         .EXAMPLE
-        Get-SelniumModule
+        Get-SeleniumModule4
     
     #>
     try {
