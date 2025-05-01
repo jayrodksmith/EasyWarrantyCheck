@@ -433,42 +433,39 @@ function Get-WarrantyDell {
         # Get inner text of the page
         $PageText = $AllElements[0].Text
         
-        # Regular expression pattern to match "Expired" or "Expires" followed by a date
-        $DateRegex = [regex]::Matches($PageText, '(Expired|Expires)\s(\d{1,2}\s[A-Z]{3}\s\d{4})')
-        
+        # Regular expression pattern to match "Ended" or "Ending" followed by a date
+        $DateRegex = [regex]::Matches($PageText, '(Ended|Ending)\son\s(January|February|March|April|May|June|July|August|September|October|November|December)\s\d{1,2},\s\d{4}')
+
         if ($DateRegex.Success) {
             # Extract the matched date
             $MatchedText = $DateRegex.Value
-            $StatusDate = ($MatchedText -split " ")[1..3] -join " "
-        
-            # Convert date format (from "dd MMM yyyy" to "dd-MM-yyyy")
-            $WarrantyEndDate = [datetime]::ParseExact($StatusDate, "dd MMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+            $StatusDate = ($MatchedText -split " ")[2..4] -join " "
+
+            # Convert date format (from "MMMM dd, yyyy" to "dd-MM-yyyy")
+            $WarrantyEndDate = [datetime]::ParseExact($StatusDate, "MMMM d, yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
             $FormattedDate = $WarrantyEndDate.ToString($dateformat)
         
             # Check if it's expired or not
-            if ($MatchedText -like "*Expired*") {
+            if ($MatchedText -like "*Ended*") {
                 $warEndDate = $FormattedDate
-                $warrantystatus = "Expired"
+                $warrantystatus = "Ended"
             } else {
                 $warEndDate = $FormattedDate
                 $warrantystatus = "In Warranty"
             }
-            # Try for Start Date
+            <# Try for Start Date (I can't figure out how to get this to work with Dell's new UI)
             try {
-                $checkDeviceDetails = $driver.FindElementByClassName("dds__button--secondary")
+                $checkDeviceDetails = $driver.FindElementByClassName("dds__link--standalone")
                 $checkDeviceDetails.Click()
-                Start-Sleep -Seconds 10
-                $ManageServicesButton = $driver.FindElementByClassName("viewDetailsWarranty")
-                $ManageServicesButton.Click()
                 Start-Sleep -Seconds 10
                 $PurchaseDateElement = $driver.FindElementById("dsk-purchaseDt")
                 $PurchaseDate = $PurchaseDateElement.Text
-                $WarrantystartDate = [datetime]::ParseExact($PurchaseDate, "dd MMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+                $WarrantystartDate = [datetime]::ParseExact($PurchaseDate, "MMMM dd, yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
                 $warStartDate = $WarrantystartDate.ToString($dateformat)
             } catch {
                 Write-Host "The purchase date field could not be found."
                 $warStartDate = $null
-            }
+            }#>
             
         } else {
             Write-Host "No matching text found for warranty end date "
